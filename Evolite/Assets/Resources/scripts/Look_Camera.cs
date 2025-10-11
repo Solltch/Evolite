@@ -12,11 +12,11 @@ public class Look_Camera : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        Quaternion gira = cameraTransform.rotation;
-        gira.x = 0;
-        gira.z = 0;
-        transform.rotation = gira;
+    void LateUpdate() 
+    { 
+        Quaternion gira = cameraTransform.rotation; 
+        gira.x = 0; 
+        gira.z = 0; 
+        transform.rotation = gira; 
     }
 }

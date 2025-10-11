@@ -8,6 +8,7 @@ public class Player_Attack : MonoBehaviour
     public KeyCode baseAttackKey = KeyCode.Mouse0;
     public float baseAttackDmg = 10f;
     public float baseAttackSpeed = 0.5f; // Tempo entre ataques
+    public float attackDelay;
     public bool ReadyToAttack = true;
 
     [Header("Comparadores")]
@@ -22,7 +23,7 @@ public class Player_Attack : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        attackCollider.enabled = false;
+        attackCollider.enabled = true;
         meshRenderer.enabled = false;
     }
 
@@ -63,11 +64,8 @@ public class Player_Attack : MonoBehaviour
             isAttacking = true;
             ReadyToAttack = false;
 
-            attackCollider.enabled = true;
-            meshRenderer.enabled = true;
-            DealDamage();
-
-            Invoke(nameof(DisableHitbox), 0.1f);
+            Invoke(nameof(EnableHitBox), attackDelay);
+            Invoke(nameof(DealDamage), attackDelay);
             Invoke(nameof(ResetAttack), baseAttackSpeed);
         }
     }
@@ -81,18 +79,22 @@ public class Player_Attack : MonoBehaviour
                 enemy.TakeDamage(baseAttackDmg);
             }
         }
+        isAttacking = false;
     }
 
     private void DisableHitbox()
     {
-        attackCollider.enabled = false;
         meshRenderer.enabled = false;
-
+    }
+    private void EnableHitBox()
+    {
+        meshRenderer.enabled = true;
+        Invoke(nameof(DisableHitbox), 0.1f);
     }
 
     private void ResetAttack()
     {
-        isAttacking = false;
+        
         ReadyToAttack = true;
     }
 }

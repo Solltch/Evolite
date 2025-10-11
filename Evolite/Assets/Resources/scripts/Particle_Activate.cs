@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class Particle_Activate : MonoBehaviour
 {
-    public Test_Movement stats;
+    public Player_Movement stats;
     public bool isRunning;
     public bool isGrounded;
+    public bool onSlope;
     public ParticleSystem particles;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -17,8 +18,9 @@ public class Particle_Activate : MonoBehaviour
     {
         isRunning = stats.isRunning;
         isGrounded = stats.isGrounded;
+        onSlope = stats.onSlope;
 
-        if (isRunning && isGrounded)
+        if (isRunning && isGrounded || onSlope && stats.currentAngle > stats.maxSlopeAngle)
         {
             if (!particles.isPlaying)
                 particles.Play();

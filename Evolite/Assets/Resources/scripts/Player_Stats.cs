@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Player_Stats : MonoBehaviour
 {
-    public Test_Movement movement;
+    public Player_Movement movement;
     public Sliders_Control healthControl;
     public Sliders_Control staminaCcontrol;
     public Damage_Flash flash;

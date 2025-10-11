@@ -1,7 +1,9 @@
+using System;
+using System.Threading;
 using UnityEngine;
-using static UnityEngine.UI.Image;
+using UnityEngine.UIElements;
 
-public class Test_Movement : MonoBehaviour
+public class test_movement : MonoBehaviour
 {
     [Header("Movimento")]
     private float moveSpeed;
@@ -14,20 +16,23 @@ public class Test_Movement : MonoBehaviour
 
     [Header("Pulo")]
     public float ray;
+    public float WallRay;
     public float jumpForce;
     public float airMultiplier;
 
     public float jumpCoolDown;
     public bool readyToJump;
-    
+
     public float jumpDamping;
     private Vector3 inercia;
 
     public LayerMask groundLayer;
 
     [Header("Ladeiras")]
+    public float currentAngle;
     public float maxSlopeAngle;
     public float slopeRay;
+    public float slopeGroundRay;
     public bool onSlope = false;
     private RaycastHit slopeHit;
     private Vector3 groundNormal = Vector3.up;
@@ -35,11 +40,14 @@ public class Test_Movement : MonoBehaviour
     [Header("Comparações")]
     public bool isRunning;
     public bool isGrounded;
+    public bool isSlopeGrounded;
     public bool isSneaking;
     public bool isMoving;
     private bool isMovingBU;
     public bool isJumping;
     public bool testCheck;
+    public bool isAbleToMove;
+    public DateTime Falling;
 
     [Header("Butões")]
     public KeyCode runKey;
@@ -68,17 +76,17 @@ public class Test_Movement : MonoBehaviour
         cameraTransform = UnityEngine.Camera.main.transform;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
         readyToJump = true;
+        isAbleToMove = true;
     }
 
     // Update is called once per frame
     void Update()
     {
         CheckGrounded();
+        OnSlope();   
         StateHandler();
         MyInputs();
         JumpInput();
-        OnSlope();
-
         rotation();
     }
 
@@ -89,25 +97,31 @@ public class Test_Movement : MonoBehaviour
 
     private void CheckGrounded()
     {
-        float slopeAngle = Vector3.Angle(slopeHit.normal, Vector3.up);
+        // Origem do ray (levemente acima do pivot para evitar colisão com o próprio colisor)
+        Vector3 origin = transform.position + Vector3.up * 0.1f;
 
-        float minRay = 0.2f;
-        float maxRay = 0.4f;
-        float adjustedRay = Mathf.Lerp(minRay, maxRay, slopeAngle / maxSlopeAngle);
+        Debug.DrawRay(origin, Vector3.down * ray, Color.red);
 
-        Debug.DrawRay(transform.position + Vector3.up * 0.1f, Vector3.down * adjustedRay, Color.green);
-
-        if (Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, adjustedRay, groundLayer))
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, ray, groundLayer, QueryTriggerInteraction.Ignore))
         {
             isGrounded = true;
-            slopeHit = hit;
-            onSlope = slopeAngle > 0.1f && slopeAngle < maxSlopeAngle;
+            slopeHit = hit; // atualiza com o hit atual
+
+            // Calcular o ângulo DO HIT ATUAL
+            float slopeAngle = Vector3.Angle(hit.normal, Vector3.up);
+            currentAngle = slopeAngle;
+
+            // onSlope apenas se ângulo estiver entre um mínimo e maxSlopeAngle
+            onSlope = slopeAngle > 2f && slopeAngle < maxSlopeAngle;
         }
         else
         {
             isGrounded = false;
             onSlope = false;
+            currentAngle = 0f;
         }
+
+        isSlopeGrounded = Physics.Raycast(origin, Vector3.down, slopeGroundRay, groundLayer, QueryTriggerInteraction.Ignore);
     }
 
     private void StateHandler()
@@ -169,7 +183,11 @@ public class Test_Movement : MonoBehaviour
         {
             Vector3 inputDir = new Vector3(inputX, 0f, inputZ).normalized;
 
-            if (inputDir.sqrMagnitude < 0.01f && isGrounded)
+            //Condição para congelar X/Z: parado, está no chão, **não** em mt inclinada
+            bool nearlyStopped = inputDir.sqrMagnitude < 0.01f;
+            bool flatEnoughToFreeze = isGrounded && currentAngle < maxSlopeAngle;
+
+            if (nearlyStopped && flatEnoughToFreeze)
             {
                 rb.constraints = RigidbodyConstraints.FreezeRotation
                                | RigidbodyConstraints.FreezePositionX
@@ -188,7 +206,7 @@ public class Test_Movement : MonoBehaviour
             camDireita.Normalize();
 
             moveInput = camFrente * inputDir.z + camDireita * inputDir.x;
-            moveInput.Normalize();
+            //moveInput.Normalize();
 
             if (moveInput != Vector3.zero)
             {
@@ -203,7 +221,7 @@ public class Test_Movement : MonoBehaviour
             {
                 if (isMovingBU != isMoving)
                 {
-                    ZerarVelocity();
+                    rb.linearVelocity = Vector3.zero;
                 }
             }
 
@@ -230,7 +248,11 @@ public class Test_Movement : MonoBehaviour
         isJumping = true;
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
         inercia = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-        rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
+        if (onSlope && currentAngle > maxSlopeAngle)
+            rb.AddForce(jumpForce * slopeHit.normal, ForceMode.Impulse);
+        else
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
 
         Invoke(nameof(EndJumpBuffer), 0.15f); // 150ms de buffer para evitar override da rampa
         Invoke(nameof(ResetJump), jumpCoolDown);
@@ -249,15 +271,31 @@ public class Test_Movement : MonoBehaviour
 
     private void MovementHandler()
     {
+        if (!isAbleToMove) return; // bloqueia movimento horizontal se não puder se mover
+
         Vector3 currentVel = rb.linearVelocity;
         Vector3 horizontalVel = new Vector3(currentVel.x, 0, currentVel.z);
         Vector3 targetVel = Vector3.zero;
+        
+        // Checa se há parede à frente
+        if (moveInput.magnitude > 0.01f)
+        {
+            Vector3 origin = transform.position + Vector3.up * 0.5f;
+            float checkDist = 0.5f; // ajuste para distância de checagem
+            if (Physics.Raycast(origin, moveInput, out RaycastHit hit, checkDist, groundLayer))
+            {
+                float angle = Vector3.Angle(hit.normal, Vector3.up);
+                if (angle > maxSlopeAngle) // parede íngreme à frente
+                {
+                    return; // cancela movimento horizontal
+                }
+            }
+        }
 
         if (isGrounded)
         {
             targetVel = moveInput * moveSpeed;
             inercia = targetVel;
-            
         }
         else
         {
@@ -271,8 +309,6 @@ public class Test_Movement : MonoBehaviour
 
         Vector3 velDiff = targetVel - horizontalVel;
         rb.AddForce(velDiff, ForceMode.VelocityChange);
-
-        
     }
 
     private void OnSlope()
@@ -281,51 +317,67 @@ public class Test_Movement : MonoBehaviour
         Vector3 velocity = rb.linearVelocity;
         if (Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, slopeRay, groundLayer))
         {
-            float angle = Vector3.Angle(hit.normal, Vector3.up);
+            currentAngle = Vector3.Angle(hit.normal, Vector3.up);
 
-            if (angle > 2f)
+            if (currentAngle > 2f)
             {
-                if (angle <= maxSlopeAngle && hit.normal != Vector3.up)
+                onSlope = true;
+                if (currentAngle <= maxSlopeAngle)
                 {
                     slopeHit = hit;
-                    onSlope = true;
                     Vector3 slopeDirection = Vector3.ProjectOnPlane(moveInput, hit.normal).normalized;
                     Debug.DrawRay(transform.position, slopeDirection);
-                    if (isGrounded)
-                        if (isMoving)
-                            if (!isJumping)
-                            {
+                    if (isSlopeGrounded && isMoving && !isJumping)
+                        {
                                 rb.linearVelocity = slopeDirection * moveSpeed;
                                 float moveAngle = Vector3.Angle(Vector3.up, slopeDirection);
                                 if (moveAngle > 90)
                                 {
-                                    float a = rb.linearVelocity.z;
-                                    float b = rb.linearVelocity.x;
                                     float c = Mathf.Sqrt(Mathf.Pow(rb.linearVelocity.z, 2) + Mathf.Pow(rb.linearVelocity.x, 2));
                                     rb.linearVelocity -= new Vector3(0, c, 0);
                                 }
-                            }
+                        }
+                    isAbleToMove = true;
                 }
                 else
                 {
-                    if (isGrounded)
+                    slopeHit = hit;
+                    isAbleToMove = false;
+
+                    // direção de escorregamento
+                    Vector3 slideDirection = Vector3.ProjectOnPlane(Vector3.down, hit.normal).normalized;
+                    Debug.DrawRay(transform.position, slideDirection);
+
+                    if (isSlopeGrounded && !isJumping)
                     {
-                        SlideHandler();
+                        // força de escorregamento constante
+                        float slideForce = 8f;
+                        rb.AddForce(slideDirection * slideForce, ForceMode.Acceleration);
+
+                        onSlope = true;
+
+                        rb.linearVelocity = slideDirection * moveSpeed;
+                        float moveAngle = Vector3.Angle(Vector3.up, slideDirection);
+                        if (moveAngle > 90)
+                        {
+                            float c = Mathf.Sqrt(Mathf.Pow(rb.linearVelocity.z, 2) + Mathf.Pow(rb.linearVelocity.x, 2));
+                            rb.linearVelocity -= new Vector3(0, c, 0);
+                        }
                     }
+
+                    Invoke(nameof(ResetMovement), 0.15f);
                 }
             }
-            
+
         }
     }
 
-    private void ZerarVelocity()
+    private void ResetMovement()
     {
-        rb.linearVelocity = Vector3.zero;
-    }
-
-    private void SlideHandler()
-    {
-
+        if (currentAngle <= maxSlopeAngle)
+        {
+            isAbleToMove = true;
+        }
     }
 
     private void rotation()
@@ -362,6 +414,6 @@ public class Test_Movement : MonoBehaviour
             transform.forward = adjustedLookDir.normalized;
         }
 
-            
+
     }
 }
