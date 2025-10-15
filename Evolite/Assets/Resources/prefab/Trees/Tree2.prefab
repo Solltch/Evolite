@@ -20,17 +20,25 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: -1045810435, guid: 8194e29e5d250ef45858cde4c3c19389, type: 3}
+    - target: {fileID: 1739321238707489737, guid: 23618a4e8b729a04680c3dd1f705cb70, type: 3}
+      propertyPath: spawnArea.y
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1739321238707489737, guid: 23618a4e8b729a04680c3dd1f705cb70, type: 3}
+      propertyPath: spawnHeight
+      value: 0.65
+      objectReference: {fileID: 0}
     - target: {fileID: 2041346427297750660, guid: 23618a4e8b729a04680c3dd1f705cb70, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.5437075
+      value: 5.9834514
       objectReference: {fileID: 0}
     - target: {fileID: 2041346427297750660, guid: 23618a4e8b729a04680c3dd1f705cb70, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.00050002337
+      value: -3.288
       objectReference: {fileID: 0}
     - target: {fileID: 2041346427297750660, guid: 23618a4e8b729a04680c3dd1f705cb70, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.4248301
+      value: 3.4817672
       objectReference: {fileID: 0}
     - target: {fileID: 2041346427297750660, guid: 23618a4e8b729a04680c3dd1f705cb70, type: 3}
       propertyPath: m_LocalRotation.w

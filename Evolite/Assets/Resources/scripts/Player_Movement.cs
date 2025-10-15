@@ -28,7 +28,7 @@ public class Player_Movement : MonoBehaviour
     public LayerMask groundLayer;
 
     [Header("Melhorias")]
-    public bool wings;
+    public bool haveWings;
 
     [Header("Ladeiras")]
     public float currentAngle;

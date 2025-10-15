@@ -6,6 +6,7 @@ TagManager:
   tags:
   - LevelExit
   - Creature
+  - Interactable
   layers:
   - Default
   - TransparentFX

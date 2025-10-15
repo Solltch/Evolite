@@ -5,6 +5,7 @@ public class Player_Stats : MonoBehaviour
     public Player_Movement movement;
     public Sliders_Control healthControl;
     public Sliders_Control staminaCcontrol;
+    public Sliders_Control hungerControl;
     public Damage_Flash flash;
     public bool isRunning;
     public bool isGrounded;
@@ -13,12 +14,17 @@ public class Player_Stats : MonoBehaviour
     public float curHealth;
     public float maxStamina;
     public float curStamina;
+    public float maxHunger;
+    public float curHunger;
 
     public float runCost;
     public float jumpCost;
     public float staminaRecovery;
     public float restDelay;
+    public float hungerDecaySpeed;
     public bool isExhausted;
+
+    public float DNA;
 
     public float restTimer;
     private bool gastouStaminaNoFrame = false;
@@ -28,6 +34,7 @@ public class Player_Stats : MonoBehaviour
     {
         curHealth = maxHealth;
         curStamina = maxStamina;
+        curHunger = maxHunger;
     }
 
     // Update is called once per frame
@@ -68,9 +75,11 @@ public class Player_Stats : MonoBehaviour
         }
 
         Rest();
+        Fome();
 
         healthControl.SetValue(curHealth);
         staminaCcontrol.SetValue(curStamina);
+        hungerControl.SetValue(curHunger);
 
         isExhausted = curStamina <= 0.01f;
 
@@ -104,5 +113,12 @@ public class Player_Stats : MonoBehaviour
     {
         curStamina = Mathf.Clamp(curStamina, 0, maxStamina);
         curHealth = Mathf.Clamp(curHealth, 0, maxHealth);
+        curHunger = Mathf.Clamp(curHunger, 0, maxHunger);
+    }
+
+    private void Fome()
+    {
+        curHunger -= hungerDecaySpeed * Time.fixedDeltaTime;
+        Limitador();
     }
 }

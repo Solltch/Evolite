@@ -5,8 +5,8 @@ using UnityEngine.Windows;
 public class Player_General : MonoBehaviour
 {
     public Animator animator;
-    private float lastMoveX;
-    private float lastMoveZ;
+    public float lastMoveX;
+    public float lastMoveZ;
     public Player_Movement stats;
     public Player_Attack stats2;
     public Vector3 pose;
@@ -22,9 +22,10 @@ public class Player_General : MonoBehaviour
     public bool isAttacking;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
-        
+        stats = GameObject.Find("Player Collider").GetComponent<Player_Movement>();
+        stats2 = GameObject.Find("Player Attack").GetComponent<Player_Attack>();
     }
 
     // Update is called once per frame
@@ -71,34 +72,47 @@ public class Player_General : MonoBehaviour
 
         isMoving = stats.isMoving;
         isRunning = stats.isRunning;
-        isJumping = stats.isJumping;
         isAttacking = stats2.isAttacking;
 
-        if (stats.isGrounded == false && stats.wings == false)
+        if (isJumping)
         {
-            timer += Time.fixedDeltaTime;
-            if (timer > 2)
-            {
-                isFalling = true;
-                
-            }
+            if (stats.isGrounded)
+                isJumping = false;
+            else
+                return;
+        }
+        else
+            isJumping = stats.isJumping;
+
+
+
+
+        if (!stats.isGrounded && !isJumping)
+        {
+            isFalling = true;
         }
         else
         {
-            timer = 0;
-            isFalling = stats.isFalling;
+            if (isJumping && !stats.isGrounded)
+            {
+                timer += Time.fixedDeltaTime;
+                if (timer > 2)
+                {
+                    isFalling = true;
+
+                }
+            }
+            else
+                timer = 0;
+            isFalling = false;
         }
 
-            if (lastMoveZ != 0)
+       if (lastMoveZ != 0)
             animator.SetFloat("Horizontal", 0);
         else
             animator.SetFloat("Horizontal", lastMoveX);
 
-        if (stats.isGrounded == false && isFalling == false)
-            animator.SetBool("Jumping", true);
-        else
-            animator.SetBool("Jumping", isJumping);
-
+        animator.SetBool("Jumping", isJumping);
         animator.SetFloat("Vertical", lastMoveZ);
         animator.SetBool("Falling", isFalling);
         animator.SetBool("Moving", isMoving);
@@ -106,11 +120,12 @@ public class Player_General : MonoBehaviour
         
         animator.SetBool("Attacking", stats2.isAttacking);
 
-        
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Jump") && !isJumping)
+        {
+            animator.Play("Jumpped");
+        }
 
-
-
-            Vector3 camFrente = cameraTransform.forward;
+        Vector3 camFrente = cameraTransform.forward;
         Vector3 camDireita = cameraTransform.right;
         camFrente.y = 0;
         camDireita.y = 0;

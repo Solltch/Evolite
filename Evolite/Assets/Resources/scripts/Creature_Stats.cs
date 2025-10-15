@@ -1,7 +1,9 @@
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 
 public class Creature_Stats : MonoBehaviour
 {
+    public ParticleSystem particles;
     public Damage_Flash flash;
     public bool isRunning;
     public bool isGrounded;
@@ -21,8 +23,10 @@ public class Creature_Stats : MonoBehaviour
     private bool gastouStaminaNoFrame = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Awake()
     {
+        particles = GetComponentInChildren<ParticleSystem>();
+        flash = GameObject.Find("Dummy_Sprite").GetComponent<Damage_Flash>();
         curHealth = maxHealth;
         curStamina = maxStamina;
     }
@@ -30,6 +34,18 @@ public class Creature_Stats : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (isRunning)
+        {
+            if (!particles.isPlaying)
+                particles.Play();
+        }
+        else
+        {
+            if (particles.isPlaying)
+                particles.Stop();
+        }
+
+        transform.rotation = transform.parent.rotation;
     }
 
 
