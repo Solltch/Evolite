@@ -1,0 +1,33 @@
+CREATE DATABASE IF NOT EXISTS CriaturasDB;
+USE CriaturasDB;
+
+CREATE TABLE Usuario (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    tempo_de_conta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE Habilidade (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    custo_DNA INT NOT NULL
+);
+
+CREATE TABLE Criatura (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_criador INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    level INT NOT NULL DEFAULT 1,
+    tipo VARCHAR(50),
+    FOREIGN KEY (id_criador) REFERENCES Usuario(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Criat_Habil (
+    id_criatura INT NOT NULL,
+    id_habilidade INT NOT NULL,
+    PRIMARY KEY (id_criatura, id_habilidade),
+    FOREIGN KEY (id_criatura) REFERENCES Criatura(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_habilidade) REFERENCES Habilidade(id) ON DELETE CASCADE
+);
