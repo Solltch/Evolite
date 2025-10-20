@@ -1,117 +1,176 @@
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Creature_Stats : MonoBehaviour
 {
+    [Header("Referências")]
     public ParticleSystem particles;
     public Damage_Flash flash;
+    public Transform sprite;
+    public NavMeshAgent agent;
+    public Creature_Attack attack;
+    public Creature_General general;
+
+    [Header("Status")]
     public bool isRunning;
     public bool isGrounded;
+    public bool isDead;
+    public State type;
+    public enum State { carni, herbi, oni }
+    public float courage;
 
+    [Header("Vida e Stamina")]
     public float maxHealth;
     public float curHealth;
     public float maxStamina;
     public float curStamina;
 
-    public float runCost;
-    public float jumpCost;
+    [Header("Stamina e Movimento")]
+    public float runCost = 5f;
     public float staminaRecovery;
-    public float restDelay;
+    public float restDelay = 1f;
     public bool isExhausted;
 
-    public float restTimer;
+    private float restTimer;
     private bool gastouStaminaNoFrame = false;
+    public bool tomouDanoNoFrame = false;
+    private float hpNoFrame;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Awake()
     {
-        particles = GetComponentInChildren<ParticleSystem>();
-        flash = GameObject.Find("Dummy_Sprite").GetComponent<Damage_Flash>();
+        // Referências seguras
+        if (particles == null)
+            particles = GetComponentInChildren<ParticleSystem>();
+
+        if (flash == null && sprite != null)
+            flash = sprite.GetComponent<Damage_Flash>();
+
+        if (agent == null)
+            agent = GetComponentInParent<NavMeshAgent>();
+
+        if (sprite == null && transform.parent != null)
+            sprite = transform.parent.Find("Dummy_Sprite");
+
+        if (attack == null)
+            attack = GetComponentInChildren<Creature_Attack>();
+
+        if (general == null)
+            general = GetComponentInParent<Creature_General>();
+
+        // Inicialização de valores
         curHealth = maxHealth;
         curStamina = maxStamina;
+        staminaRecovery = maxStamina / 10f;
+        hpNoFrame = curHealth;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (isRunning)
+        // Verifica se tomou dano
+        tomouDanoNoFrame = !Mathf.Approximately(hpNoFrame, curHealth);
+        hpNoFrame = curHealth;
+
+        // Controla partículas
+        if (particles != null)
         {
-            if (!particles.isPlaying)
+            if (isRunning && !particles.isPlaying)
                 particles.Play();
-        }
-        else
-        {
-            if (particles.isPlaying)
+            else if (!isRunning && particles.isPlaying)
                 particles.Stop();
         }
 
-        transform.rotation = transform.parent.rotation;
+        // Rotaciona o sprite para acompanhar o pai
+        if (sprite != null)
+            sprite.rotation = Quaternion.Euler(sprite.rotation.eulerAngles.x, transform.parent.rotation.eulerAngles.y, sprite.rotation.eulerAngles.z);
     }
 
-
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         gastouStaminaNoFrame = false;
 
-        isRunning = false;
-        isGrounded = false;
-        staminaRecovery = maxStamina / 10;
+        // Aqui você deve definir isRunning e isGrounded baseado na entrada ou IA
+        // Exemplo: isRunning = agent.velocity.magnitude > 0.1f;
+        // Exemplo: isGrounded = true; // placeholder
 
-
-        
-
-        if (isRunning)
+        // Gasto de stamina
+        if (isRunning && !isExhausted)
         {
             curStamina -= runCost * Time.fixedDeltaTime;
             gastouStaminaNoFrame = true;
         }
-        else
-            gastouStaminaNoFrame = false;
 
-
+        // Controle de descanso
         if (gastouStaminaNoFrame)
-        {
-            restTimer = 0;
-        }
+            restTimer = 0f;
         else
-        {
             restTimer += Time.fixedDeltaTime;
-        }
 
         Rest();
 
-
+        // Verifica exaustão
         isExhausted = curStamina <= 0.01f;
 
-    }
-
-    public void JumpCost()
-    {
-        curStamina -= jumpCost;
-        gastouStaminaNoFrame = true;
-        return;
+        Limitador();
     }
 
     private void Rest()
     {
         if (restTimer > restDelay && curStamina < maxStamina)
-        {
-
             curStamina += staminaRecovery * Time.fixedDeltaTime;
-        }
-        Limitador();
     }
 
     public void TakeDamage(float damage)
     {
         curHealth -= damage;
         Limitador();
-        flash.Flash();
+
+        if (curHealth <= 0f)
+            Die();
     }
 
     private void Limitador()
     {
-        curStamina = Mathf.Clamp(curStamina, 0, maxStamina);
-        curHealth = Mathf.Clamp(curHealth, 0, maxHealth);
+        curStamina = Mathf.Clamp(curStamina, 0f, maxStamina);
+        curHealth = Mathf.Clamp(curHealth, 0f, maxHealth);
+    }
+
+    public void Die()
+    {
+        if (isDead) return;
+        isDead = true;
+
+        // Para partículas completamente
+        if (particles != null)
+            particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            particles.gameObject.SetActive(false);
+
+        transform.parent.localRotation = Quaternion.Euler(transform.parent.localRotation.eulerAngles.x, transform.parent.localRotation.eulerAngles.y, 90f);
+
+        // Desativa NavMeshAgent
+        if (agent != null)
+        {
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
+            agent.enabled = false;
+        }
+
+        // Desativa ataque
+        if (attack != null)
+            attack.enabled = false;
+
+        // Desativa IA/movimento
+        if (general != null)
+            general.enabled = false;
+
+        // Adiciona InteractFunctions de forma segura
+        if (GetComponent<InteractFunctions>() == null)
+        {
+            InteractFunctions interact = gameObject.AddComponent<InteractFunctions>();
+            interact.isFood = true;
+        }
+
+        // Define a tag
+        gameObject.tag = "Interactable";
     }
 }

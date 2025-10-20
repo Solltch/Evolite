@@ -1,43 +1,58 @@
 using System.Collections;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class Damage_Flash : MonoBehaviour
 {
+    [Header("Configurações de Flash")]
     public Color flashColor = Color.white;
-    public float flashTime = .2f;
+    public float flashTime = 0.2f;
+
+    [Header("Referências")]
     public SpriteRenderer rend;
     public Material flashMaterial;
+    public bool isPlayer;
+    public Creature_Stats statsCreat;
+    public Player_Stats statsPlayer;
 
     private Material originalMaterial;
     private bool isFlashing = false;
-    private Coroutine flashCoroutine = null;
+    private Material loadedMat;
 
-    void Start()
+    private void Awake()
     {
-        Material loadedMat = Resources.Load<Material>("Shaders/FlashMaterial");
-        flashMaterial = new Material(loadedMat);
-        flashTime = .2f;
+        if (!isPlayer)
+        {
+            statsCreat = transform.parent.GetComponentInChildren<Creature_Stats>();
+            statsPlayer = null;
+        }
+        else
+        {
+            statsPlayer = GameObject.Find("Player Collider").GetComponent<Player_Stats>();
+            statsCreat = null;
+        }
 
         rend = GetComponent<SpriteRenderer>();
         originalMaterial = rend.material;
     }
 
-    public void Flash()
+    private void Update()
     {
-        if (flashCoroutine != null)
+        // Detecta dano e inicia flash se necessário
+        if (!isFlashing)
         {
-            StopCoroutine(flashCoroutine);
+            if (!isPlayer && statsCreat != null && statsCreat.tomouDanoNoFrame)
+                StartCoroutine(FlashCoroutine());
+            else if (isPlayer && statsPlayer != null && statsPlayer.tomouDanoNoFrame)
+                StartCoroutine(FlashCoroutine());
         }
-        flashCoroutine = StartCoroutine(DoFlash());
     }
 
-    private IEnumerator DoFlash()
+    private IEnumerator FlashCoroutine()
     {
+        isFlashing = true;
         rend.material = flashMaterial;
         flashMaterial.SetColor("_FlashColor", flashColor);
+        rend.receiveShadows = false;
 
         float timer = 0f;
 
@@ -46,10 +61,11 @@ public class Damage_Flash : MonoBehaviour
             timer += Time.deltaTime;
             float currentAmount = Mathf.Lerp(1f, 0f, timer / flashTime);
             flashMaterial.SetFloat("_FlashAmount", currentAmount);
-            yield return null;
+            yield return null; // espera o próximo frame
         }
 
         rend.material = originalMaterial;
-        flashCoroutine = null;
+        rend.receiveShadows = true;
+        isFlashing = false;
     }
 }

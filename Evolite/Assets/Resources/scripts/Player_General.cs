@@ -24,6 +24,7 @@ public class Player_General : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        cameraTransform = GameObject.Find("Camera").GetComponent<Transform>();
         stats = GameObject.Find("Player Collider").GetComponent<Player_Movement>();
         stats2 = GameObject.Find("Player Attack").GetComponent<Player_Attack>();
     }

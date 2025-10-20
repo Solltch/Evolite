@@ -19,8 +19,8 @@ public class Creature_Attack : MonoBehaviour
     public MeshRenderer meshRenderer;
     public Creature_General race;
 
-    private List<Creature_Stats> enemiesInRange = new List<Creature_Stats>();
-    private Player_Stats playerStats;
+    public List<Creature_Stats> enemiesInRange = new List<Creature_Stats>();
+    public Player_Stats playerStats;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Awake()
@@ -34,18 +34,18 @@ public class Creature_Attack : MonoBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
+        // Detecta criaturas
         if (other.CompareTag("Creature"))
         {
             Creature_Stats enemy = other.GetComponent<Creature_Stats>();
-            Player_Stats candidate = other.GetComponent<Player_Stats>();
-            if (candidate != null)
-            {
-                playerStats = candidate;
-            }
             if (enemy != null && !enemiesInRange.Contains(enemy))
-            {
                 enemiesInRange.Add(enemy);
-            }
+        }
+
+        // Detecta o player
+        if (other.CompareTag("Player"))
+        {
+            playerStats = other.GetComponent<Player_Stats>();
         }
     }
 
@@ -55,9 +55,7 @@ public class Creature_Attack : MonoBehaviour
         {
             Creature_Stats enemy = other.GetComponent<Creature_Stats>();
             if (enemy != null && enemiesInRange.Contains(enemy))
-            {
                 enemiesInRange.Remove(enemy);
-            }
         }
 
         if (other.CompareTag("Player"))
@@ -84,12 +82,11 @@ public class Creature_Attack : MonoBehaviour
         foreach (var enemy in enemiesInRange)
         {
             if (enemy != null)
-            {
                 enemy.TakeDamage(baseAttackDmg);
-                playerStats.TakeDamage(baseAttackDmg);
-            }
         }
-        isAttacking = false;
+
+        if (playerStats != null)
+            playerStats.TakeDamage(baseAttackDmg);
     }
 
     public void DisableHitbox()

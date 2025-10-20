@@ -16,7 +16,7 @@ public class Look_Camera : MonoBehaviour
     { 
         Quaternion gira = cameraTransform.rotation; 
         gira.x = 0; 
-        gira.z = 0; 
+        gira.z = transform.parent.rotation.z; 
         transform.rotation = gira; 
     }
 }

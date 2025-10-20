@@ -17,6 +17,7 @@ public class ThirdPersonCamera : MonoBehaviour
 
     void Awake()
     {
+        target = GameObject.Find("Player Collider").GetComponent<Transform>();
         var cam = GetComponent<UnityEngine.Camera>();
         if (cam && !CompareTag("MainCamera")) gameObject.tag = "MainCamera";
     }

@@ -51,27 +51,43 @@ public class Creature_General : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         stats = GetComponentInChildren<Creature_Stats>();
         attack = GetComponentInChildren<Creature_Attack>();
-        nestPoint = transform.position;
-        playerHumor = generalHumor;
+        isWalkingDelayed = false;
+        Transform nest = transform.parent.Find("Centro").GetComponent<Transform>();
+        if (nest != null)
+            nestPoint = nest.position;
+        else
+            nestPoint = transform.position;
+        
 
         agent.acceleration = acceleration;
+        SetCourage();
+
+        if (stats.courage > 1.5f)
+            generalHumor = State.angry;
+
+        playerHumor = generalHumor;
+
     }
 
     // Update is called once per frame
     private void Update()
     {
-        playerInSightRange = Physics.CheckSphere(transform.position, sightRange, WIPlayer);
-        playerInAttackRange = Physics.CheckSphere(transform.position, attack.attackRange - .1f, WIPlayer);
-
-        StateHandler();
-
-        if (playerInSightRange)
+        if (agent != null)
         {
-            if (playerInAttackRange) Attack();
-            else Perseguir();
-        }
-        else Patrulha();
+            playerInSightRange = Physics.CheckSphere(transform.position, sightRange, WIPlayer);
+            playerInAttackRange = Physics.CheckSphere(transform.position, attack.attackRange - .1f, WIPlayer);
 
+            StateHandler();
+
+            if (playerInSightRange)
+            {
+                if (playerInAttackRange) Attack();
+                else Perseguir();
+            }
+            else Patrulha();
+
+            RotateAgent();
+        }
     }
 
     private void StateHandler()
@@ -95,17 +111,29 @@ public class Creature_General : MonoBehaviour
     }
 
     private void Patrulha()
+{
+    agent.stoppingDistance = 0;
+
+    if (!walkPointSet)
     {
-        if (!walkPointSet) NewWalkPoint();
-        else if (!isWalkingDelayed)
+        NewWalkPoint();
+    }
+
+    if (walkPointSet)
+    {
+        if (agent != null && agent.isActiveAndEnabled)
         {
-            if (NavMesh.SamplePosition(walkPoint, out NavMeshHit hit, 1f, NavMesh.AllAreas))
-                StartCoroutine(SetDestinoDelay(hit.position, Random.Range(0.1f, 2f)));
+            agent.isStopped = false;
+            agent.SetDestination(walkPoint);
         }
 
-        if (Vector3.Distance(transform.position, walkPoint) < 1f)
+        // Marca como não setado quando chegou
+        if (!agent.pathPending && agent.remainingDistance < 0.5f)
+        {
             walkPointSet = false;
+        }
     }
+}
 
     private IEnumerator SetDestinoDelay(Vector3 destino, float delay)
     {
@@ -138,6 +166,7 @@ public class Creature_General : MonoBehaviour
 
     private void Perseguir()
     {
+        agent.stoppingDistance = .5f;
         NavMeshHit hit;
         if (NavMesh.SamplePosition(player.position, out hit, 1f, NavMesh.AllAreas))
             agent.SetDestination(hit.position);
@@ -147,7 +176,13 @@ public class Creature_General : MonoBehaviour
 
     private void Attack()
     {
+        agent.stoppingDistance = .6f;
         attack.BaseAttack();
+
+        Vector3 direction = player.position - transform.position;
+        Quaternion lookRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10f);
+
     }
     
     private void OnDrawGizmosSelected()
@@ -161,6 +196,51 @@ public class Creature_General : MonoBehaviour
         Gizmos.DrawSphere(walkPoint, 0.3f);
 
         Gizmos.color = Color.grey;
-        Gizmos.DrawWireSphere(nestPoint, maxDistance);
+        if (nestPoint != null)
+            Gizmos.DrawWireSphere(nestPoint, maxDistance);
+        else
+            Gizmos.DrawWireSphere(transform.position, maxDistance);
+    }
+
+    private void RotateAgent()
+    {
+        if (agent.velocity.sqrMagnitude > 0.1f) // só rotaciona se estiver se movendo
+        {
+            Vector3 direction = agent.velocity.normalized;
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10f);
+        }
+    }
+
+    public void SetCourage()
+    {
+
+        switch (stats.type)
+        {
+            case Creature_Stats.State.carni:
+                stats.courage = Random.Range(0.5f, 2f);
+                break;
+            case Creature_Stats.State.herbi:
+                stats.courage = Random.Range(0f, 1.5f);
+                break;
+            case Creature_Stats.State.oni:
+                stats.courage = Random.Range(0f, 2f);
+                break;
+            default:
+                stats.courage = 1f;
+                break;
+        }
+    }
+
+    public void SetHumor()
+    {
+        if(stats.courage > 1f)
+        {
+            playerHumor = State.angry;
+        }
+        else
+        {
+            playerHumor = State.scared;
+        }
     }
 }

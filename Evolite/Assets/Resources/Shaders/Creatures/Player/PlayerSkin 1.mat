@@ -51,6 +51,7 @@ Material:
     - _CastShadows: 1
     - _Cull: 0
     - _DstBlend: 0
+    - _FlashAmount: 0
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
@@ -61,7 +62,8 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
-    - _Color: {r: 0, g: 0.97310853, b: 1, a: 0}
+    - _Color: {r: 0, g: 1, b: 0.7648866, a: 0}
+    - _FlashColor: {r: 1, g: 1, b: 1, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &3212627151279040184

@@ -4922,19 +4922,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68887a4814eaecb4499e671ace9a5cbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  particles: {fileID: 0}
   flash: {fileID: 3993701172422451006}
   isRunning: 0
   isGrounded: 0
+  type: 0
+  courage: 0
   maxHealth: 100
   curHealth: 0
   maxStamina: 100
   curStamina: 0
   runCost: 5
-  jumpCost: 15
   staminaRecovery: 0
   restDelay: 2
   isExhausted: 0
   restTimer: 0
+  tomouDanoNoFrame: 0
 --- !u!54 &7854068059209742520
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5102,4 +5105,7 @@ MonoBehaviour:
   flashColor: {r: 1, g: 1, b: 1, a: 1}
   flashTime: 0.1
   rend: {fileID: 0}
-  flashMaterial: {fileID: 0}
+  flashMaterial: {fileID: 2100000, guid: 62ab9e2919f9ccb43870120b502268d5, type: 2}
+  isPlayer: 0
+  statsCreat: {fileID: 0}
+  statsPlayer: {fileID: 0}

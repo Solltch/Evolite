@@ -71,7 +71,6 @@ public class Player_Movement : MonoBehaviour
     private Rigidbody rb;
     public Transform scale;
     public Player_Stats stats;
-    public Player_General animations;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

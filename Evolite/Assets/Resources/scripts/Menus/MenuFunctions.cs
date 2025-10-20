@@ -10,6 +10,7 @@ public class MenuFunctions : MonoBehaviour
 
     public void Awake()
     {
+        pauseMenu = GameObject.Find("PauseMenu").GetComponent<GameObject>();
         pauseMenu.SetActive(false);
     }
 
