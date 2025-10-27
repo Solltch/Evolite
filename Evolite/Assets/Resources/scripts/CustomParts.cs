@@ -1,29 +1,23 @@
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-[System.Serializable]
 public class CustomPart : MonoBehaviour
 {
     public string name;
     public SpriteRenderer[] front;
     public SpriteRenderer[] side;
     public SpriteRenderer[] back;
-    public int Length;
     public int currentIndex;
 
-    public Player_General plr;
-
-    public void Awake()
+    private void Awake()
     {
-        plr = GameObject.Find("Player Sprite").GetComponent<Player_General>();
-        Length = front.Length;
+        SetAllEnabled(false);
     }
-    public void ChangePart()
+
+    /*public void Update()
     {
-        int i = 0;
-        while (i < Length)
+        for (int i = 0; i < front.Length; i++)
         {
-            if (i == currentIndex)
+            if (i == currentIndex && front[i] != null)
             {
                 front[i].enabled = true;
             }
@@ -32,5 +26,14 @@ public class CustomPart : MonoBehaviour
                 front[i].enabled = false;
             }
         }
+    }*/
+    private void SetAllEnabled(bool enabled)
+    {
+        foreach (var sr in front)
+            if (sr != null) sr.enabled = enabled;
+        foreach (var sr in side)
+            if (sr != null) sr.enabled = enabled;
+        foreach (var sr in back)
+            if (sr != null) sr.enabled = enabled;
     }
 }
