@@ -89,12 +89,12 @@ public class Player_Movement : MonoBehaviour
         StateHandler();
         MyInputs();
         JumpInput();
-        rotation();
     }
 
     private void FixedUpdate()
     {
         MovementHandler();
+        rotation();
     }
 
     private void CheckGrounded()

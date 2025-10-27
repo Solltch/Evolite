@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Player_General : MonoBehaviour
@@ -19,12 +20,26 @@ public class Player_General : MonoBehaviour
     public bool isFalling;
     public bool isAttacking;
 
+    [Header("Customização")]
+    public List<CustomPart> parts = new List<CustomPart>();
+    public int eye;
+    public int pupil;
+    public int head; 
+    public int tail;
+    public int bodyAcessory;
+    public int headAcessory;
+    public bool wings; 
+    public bool claws; 
+    public bool fangs;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        cameraTransform = GameObject.Find("Camera").GetComponent<Transform>();
+        cameraTransform = GameObject.Find("FreeLook Camera").GetComponent<Transform>();
         stats = GameObject.Find("Player Collider").GetComponent<Player_Movement>();
         stats2 = GameObject.Find("Player Attack").GetComponent<Player_Attack>();
+
     }
 
     // Update is called once per frame
@@ -140,4 +155,21 @@ public class Player_General : MonoBehaviour
 
     }
 
+    public void ChangePart(string partName, int index)
+    {
+        CustomPart part = parts.Find(p => p.name == partName);
+        if (part == null) return;
+
+        part.currentIndex = Mathf.Clamp(index, 0, part.front.Length - 1);
+
+        for (int i = 0; i < part.front.Length; i++)
+        {
+            part.front[i].enabled = (i == part.currentIndex);
+        }
+
+        for (int i = 0; i < part.side.Length; i++)
+        {
+            part.side[i].enabled = (i == part.currentIndex);
+        }
+    }
 }

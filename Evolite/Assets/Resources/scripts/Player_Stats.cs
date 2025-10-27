@@ -236,10 +236,7 @@ public class Player_Stats : MonoBehaviour
     public void LowHP()
     {
         redVignette.color = Color.red;
-        redVignette.gameObject.SetActive(true);
-        Animator anim = redVignette.GetComponent<Animator>();
-        if (anim != null)
-            anim.SetTrigger("LowHP");
+        redVignette.gameObject.GetComponent<Animator>().StartPlayback();
     }
 
     public void DamageRedVignette()
@@ -249,30 +246,26 @@ public class Player_Stats : MonoBehaviour
 
     private IEnumerator FadeOutVignette()
     {
-        if (!isLowHP)
+        redVignette.gameObject.GetComponent<Animator>().StopPlayback();
+        Color startColor = redVignette.color;
+        Color targetColor = new Color(startColor.r, startColor.g, startColor.b, 0);
+        float duration = 0.3f;
+        float timer = 0f;
+
+        while (timer < duration)
         {
-            Animator anim = redVignette.GetComponent<Animator>();
-            anim.Rebind();
-            Color startColor = redVignette.color;
-            Color targetColor = new Color(startColor.r, startColor.g, startColor.b, 0);
-            float duration = 0.3f;
-            float timer = 0f;
-
-            while (timer < duration)
-            {
-                timer += Time.deltaTime;
-                redVignette.color = Color.Lerp(startColor, targetColor, timer / duration);
-                yield return null;
-            }
-
-            redVignette.color = targetColor;
-            redVignette.gameObject.SetActive(false);
+            timer += Time.deltaTime;
+            redVignette.color = Color.Lerp(startColor, targetColor, timer / duration);
+            yield return null;
         }
+
+        redVignette.color = targetColor;
+        redVignette.gameObject.SetActive(false);
+        redVignette.color = startColor;
     }
 
     public void RemoveRedVignette()
     {
-        if (!isLowHP)
-            redVignette.gameObject.SetActive(false);
+        redVignette.gameObject.SetActive(false);
     }
 }
