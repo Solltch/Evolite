@@ -1,7 +1,5 @@
 using System;
-using System.Threading;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class test_movement : MonoBehaviour
 {

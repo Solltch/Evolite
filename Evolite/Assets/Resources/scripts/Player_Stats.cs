@@ -1,10 +1,7 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
-using static UnityEngine.ParticleSystem;
 using Image = UnityEngine.UI.Image;
 
 public class Player_Stats : MonoBehaviour
@@ -16,9 +13,11 @@ public class Player_Stats : MonoBehaviour
     public Damage_Flash flash;
     public GameObject deathScreen;
     public Image deathImage;
+    public Image redVignette;
     public bool isRunning;
     public bool isGrounded;
     public bool isDead;
+    public bool isLowHP;
 
     public float maxHealth;
     public float curHealth;
@@ -32,6 +31,7 @@ public class Player_Stats : MonoBehaviour
     public float staminaRecovery;
     public float restDelay;
     public float hungerDecaySpeed;
+    public float hungerDamage;
     public bool isExhausted;
 
     public float DNA;
@@ -40,19 +40,30 @@ public class Player_Stats : MonoBehaviour
     private bool gastouStaminaNoFrame = false;
     public bool tomouDanoNoFrame = false;
     private float hpNoFrame;
+    private float hungerDamageTimer;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        healthControl = GameObject.Find("FillBarH").GetComponent<Sliders_Control>();
-        staminaControl = GameObject.Find("FillBarS").GetComponent<Sliders_Control>();
-        hungerControl = GameObject.Find("FillBarHu").GetComponent<Sliders_Control>();
+        if (healthControl == null)
+            healthControl = GameObject.Find("FillBarH").GetComponent<Sliders_Control>();
+        if (staminaControl == null)
+            staminaControl = GameObject.Find("FillBarS").GetComponent<Sliders_Control>();
+        if (hungerControl == null)
+            hungerControl = GameObject.Find("FillBarHu").GetComponent<Sliders_Control>();
+        if (redVignette == null)
+            redVignette = GameObject.Find("Red Vignette").GetComponent<Image>();
+        if (deathScreen == null)
+            deathScreen = GameObject.Find("Death Screen");
+
+        redVignette.gameObject.SetActive(false);
         curHealth = maxHealth;
         curStamina = maxStamina;
         curHunger = maxHunger;
         hpNoFrame = curHealth;
+        isDead = false;
+        movement.isAbleToMove = true;
         staminaRecovery = maxStamina / 10;
-        deathScreen = GameObject.Find("Death Screen");
         deathScreen.SetActive(false);
         deathImage = deathScreen.transform.Find("You Died").GetComponent<Image>(); ;
         deathImage.color = new Color(deathImage.color.r, deathImage.color.g, deathImage.color.b, 0);
@@ -109,7 +120,7 @@ public class Player_Stats : MonoBehaviour
         hungerControl.SetValue(curHunger);
 
         isExhausted = curStamina <= 0.01f;
-
+        Limitador();
     }
 
     public void JumpCost()
@@ -126,20 +137,40 @@ public class Player_Stats : MonoBehaviour
 
             curStamina += staminaRecovery * Time.fixedDeltaTime;
         }
-        Limitador();
     }
 
     public void TakeDamage(float damage)
     {
-        if (!isDead)
+        if (isDead) return;
+        curHealth -= damage;
+        redVignette.gameObject.SetActive(true);
+        if (curHealth <= maxHealth / 30)
         {
-            curHealth -= damage;
-            Limitador();
-            if (curHealth <= 0)
-            {
-                isDead = true;
-                Die();
-            }
+            isLowHP = true;
+            redVignette.color = Color.red;
+            LowHP();
+        }    
+        if (curHealth <= 0)
+        {
+            isDead = true;
+            Die();
+        }
+        DamageRedVignette();
+    }
+
+    public void HealHP(float healing)
+    {
+        if (isDead) return;
+        curHealth += healing;
+        if (curHealth > maxHealth / 30)
+        {
+            isLowHP = false;
+            FadeOutVignette();
+        }
+        if (curHealth <= 0)
+        {
+            isDead = true;
+            Die();
         }
     }
 
@@ -153,7 +184,13 @@ public class Player_Stats : MonoBehaviour
     private void Fome()
     {
         curHunger -= hungerDecaySpeed * Time.fixedDeltaTime;
-        Limitador();
+        hungerDamageTimer += Time.fixedDeltaTime;
+
+        if (curHunger <= 0.1f && hungerDamageTimer >= 1f) // dano a cada 1s
+        {
+            TakeDamage(hungerDamage);
+            hungerDamageTimer = 0f;
+        }
     }
 
     private void Die()
@@ -194,21 +231,48 @@ public class Player_Stats : MonoBehaviour
     {
         Scene currentScene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(currentScene.name);
+    }
 
-        isDead = false;
-        movement.isAbleToMove = true;
+    public void LowHP()
+    {
+        redVignette.color = Color.red;
+        redVignette.gameObject.SetActive(true);
+        Animator anim = redVignette.GetComponent<Animator>();
+        if (anim != null)
+            anim.SetTrigger("LowHP");
+    }
 
-        curHealth = maxHealth;
-        curStamina = maxStamina;
-        curHunger = maxHunger;
+    public void DamageRedVignette()
+    {
+        StartCoroutine(FadeOutVignette());
+    }
 
-        deathScreen.SetActive(false);
+    private IEnumerator FadeOutVignette()
+    {
+        if (!isLowHP)
+        {
+            Animator anim = redVignette.GetComponent<Animator>();
+            anim.Rebind();
+            Color startColor = redVignette.color;
+            Color targetColor = new Color(startColor.r, startColor.g, startColor.b, 0);
+            float duration = 0.3f;
+            float timer = 0f;
 
-        GameObject usableMenus = GameObject.Find("UsableMenus");
-        if (usableMenus != null)
-            usableMenus.SetActive(true);
+            while (timer < duration)
+            {
+                timer += Time.deltaTime;
+                redVignette.color = Color.Lerp(startColor, targetColor, timer / duration);
+                yield return null;
+            }
 
-        deathImage.color = new Color(deathImage.color.r, deathImage.color.g, deathImage.color.b, 0);
-        deathScreen.GetComponent<Image>().color = deathImage.color;
+            redVignette.color = targetColor;
+            redVignette.gameObject.SetActive(false);
+        }
+    }
+
+    public void RemoveRedVignette()
+    {
+        if (!isLowHP)
+            redVignette.gameObject.SetActive(false);
     }
 }

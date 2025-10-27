@@ -1,6 +1,4 @@
-using System;
 using UnityEngine;
-using UnityEngine.Windows;
 
 public class Player_General : MonoBehaviour
 {

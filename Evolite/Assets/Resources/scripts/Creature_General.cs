@@ -1,9 +1,7 @@
 using System.Collections;
-using Unity.VisualScripting;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.AI;
-using static Unity.Collections.Unicode;
+using UnityEngine.SceneManagement;
 public class Creature_General : MonoBehaviour
 {
     [Header("Status Social")]
@@ -52,13 +50,16 @@ public class Creature_General : MonoBehaviour
         stats = GetComponentInChildren<Creature_Stats>();
         attack = GetComponentInChildren<Creature_Attack>();
         isWalkingDelayed = false;
-        Transform nest = transform.parent.Find("Centro").GetComponent<Transform>();
-        if (nest != null)
-            nestPoint = nest.position;
+        if (SceneManager.GetActiveScene().buildIndex == 2)
+        {
+            Transform nest = transform.parent.Find("Centro").GetComponent<Transform>();
+            if (nest != null)
+                nestPoint = nest.position;
+            else
+                nestPoint = transform.position;
+        }
         else
             nestPoint = transform.position;
-        
-
         agent.acceleration = acceleration;
         SetCourage();
 

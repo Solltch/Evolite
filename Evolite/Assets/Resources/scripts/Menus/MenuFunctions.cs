@@ -1,4 +1,3 @@
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,7 +9,6 @@ public class MenuFunctions : MonoBehaviour
 
     public void Awake()
     {
-        pauseMenu = GameObject.Find("PauseMenu").GetComponent<GameObject>();
         pauseMenu.SetActive(false);
     }
 

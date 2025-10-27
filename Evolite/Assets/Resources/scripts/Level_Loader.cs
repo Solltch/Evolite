@@ -19,7 +19,7 @@ public class Level_Loader : MonoBehaviour
     {
         if (other.tag == "LevelExit")
         {
-            SceneManager.LoadScene(1);
+            SceneManager.LoadScene(2);
         }
     }
 }

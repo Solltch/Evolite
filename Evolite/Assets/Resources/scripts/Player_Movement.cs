@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using static UnityEngine.UI.Image;
 
 public class Player_Movement : MonoBehaviour
 {
