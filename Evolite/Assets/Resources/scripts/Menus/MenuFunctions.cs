@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class MenuFunctions : MonoBehaviour
 {
     public GameObject pauseMenu;
     public KeyCode pauseButton;
     public bool isPaused;
+    public Color pickedColor;
 
     public void Awake()
     {
@@ -53,5 +56,10 @@ public class MenuFunctions : MonoBehaviour
         pauseMenu.SetActive(false);
         Time.timeScale = 1f;
         isPaused = false;
+    }
+
+    public void PickColor()
+    {
+        pickedColor = transform.GetComponent<UnityEngine.UI.Button>().colors.normalColor;
     }
 }

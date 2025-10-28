@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: b6072ab392b38dc42bd24506676e6905
+guid: 9cde16ffa79233f4db44ecd4deb15824
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -110,469 +110,205 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: pupils_0
+      name: eyes-front_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a72b50578531be44ea7e8230b4c89581
+      internalID: -1952419049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: eyes-front_1
       rect:
         serializedVersion: 2
         x: 16
-        y: 16
+        y: 0
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9ec646913ee37be47a15f52fdff90392
-      internalID: 423897784
+      spriteID: 89ab95b0a5e68b94f8cef8d4f08648a1
+      internalID: -1527273218
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_1
+      name: eyes-front_2
       rect:
         serializedVersion: 2
         x: 32
-        y: 16
+        y: 0
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: dc6359ea19a3e3b40a23bb3b52c09f25
-      internalID: -176536963
+      spriteID: 0357842b92ff3ae49af4fb95d685e75e
+      internalID: -448929839
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_2
+      name: eyes-front_3
       rect:
         serializedVersion: 2
         x: 48
-        y: 16
+        y: 0
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f8dc924ae8530cf4e8357bf27b688f8f
-      internalID: 548526476
+      spriteID: 6576a169645db514fa57bad6b44c5043
+      internalID: 391517536
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_3
+      name: eyes-front_4
       rect:
         serializedVersion: 2
         x: 64
-        y: 16
+        y: 0
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 839a528bb7b9ecb4da016d2c9eb77611
-      internalID: -1804678261
+      spriteID: b3129ae41b5d537409f8fabc887bff2b
+      internalID: 134141990
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_4
-      rect:
-        serializedVersion: 2
-        x: 80
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 08c9971a89342d84fad01b379f70a02f
-      internalID: -368801070
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_5
+      name: eyes-front_5
       rect:
         serializedVersion: 2
         x: 96
-        y: 16
+        y: 0
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2a36e29aa8aeaff4cb813f41866baa84
-      internalID: 207881140
+      spriteID: 4b54b64d9e96822429350d42c9359f83
+      internalID: -665714653
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_6
+      name: eyes-front_6
       rect:
         serializedVersion: 2
         x: 112
-        y: 16
+        y: 0
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5134cdf13a27e5646be6f7978ec78dd6
-      internalID: 1072861668
+      spriteID: 9df80553600644d44bef0a467019efdf
+      internalID: 1833869040
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_7
+      name: eyes-front_7
       rect:
         serializedVersion: 2
         x: 128
-        y: 16
+        y: 0
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8fcb9a613fdd9244f94c04788a24cb5c
-      internalID: -453723880
+      spriteID: c2f2fe4cdcedbf64196d552228697326
+      internalID: -1744652610
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_8
+      name: eyes-front_8
       rect:
         serializedVersion: 2
         x: 144
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 23d3390444048bf4ea1f4ba9987762a0
-      internalID: -379286159
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_9
-      rect:
-        serializedVersion: 2
-        x: 160
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b89737e2f12216c479ec3a17ca86bd55
-      internalID: -1497281737
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_10
-      rect:
-        serializedVersion: 2
-        x: 176
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 156f49228f0ffa246a2dc3054a460ffd
-      internalID: 397069183
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_11
-      rect:
-        serializedVersion: 2
-        x: 192
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2514c5d35fb2f514493d95f26a0e434b
-      internalID: 429910461
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_12
-      rect:
-        serializedVersion: 2
-        x: 208
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 987861f11b2f78546bf9005410ad7420
-      internalID: -1720374437
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_13
-      rect:
-        serializedVersion: 2
-        x: 16
         y: 0
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 31ed00df266f8fc4d9592d147ae90546
-      internalID: -853542853
+      spriteID: 838a200b235eb0949ba9a9408070e355
+      internalID: 117695255
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_14
-      rect:
-        serializedVersion: 2
-        x: 32
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ada42bfde2ecdfb4087ad3da73db3b25
-      internalID: -1726432213
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_15
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 255952d425547664db755ae4174a3d59
-      internalID: -1395847280
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_16
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d0744588be38fe34591a7d246e888059
-      internalID: 1835018085
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_17
-      rect:
-        serializedVersion: 2
-        x: 80
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 79f014dacf5d6c5428364b8c150fdcfd
-      internalID: -741292284
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_18
-      rect:
-        serializedVersion: 2
-        x: 96
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 47ccf36b930d49f4ab4337d55c8ac090
-      internalID: 747918690
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_19
-      rect:
-        serializedVersion: 2
-        x: 112
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d57aea16a20b01f4f8283cdb5779f1be
-      internalID: 1601737197
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_20
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1a452eb1b143f444cbce44cf1e3e3b88
-      internalID: 438973307
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pupils_21
+      name: eyes-front_9
       rect:
         serializedVersion: 2
         x: 160
@@ -580,21 +316,21 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f25efa4d4a1ceac4baba368a30531ce0
-      internalID: -1649050381
+      spriteID: a7972369d6f4e564899f3cc98cbb4f79
+      internalID: -756113401
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_22
+      name: eyes-front_10
       rect:
         serializedVersion: 2
         x: 176
@@ -602,21 +338,21 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c3a3d89af32e7c84ba788516c3a4b00f
-      internalID: -1599963984
+      spriteID: 8d1103180ff4f2c4d916f3b7b33c594c
+      internalID: 2092633034
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_23
+      name: eyes-front_11
       rect:
         serializedVersion: 2
         x: 192
@@ -624,21 +360,21 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0ae1d2fcfb05eda4daada47b3ac9f6bc
-      internalID: -262446459
+      spriteID: 4f7790e5876b9c248b29d5d0b7395773
+      internalID: -1468609601
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pupils_24
+      name: eyes-front_12
       rect:
         serializedVersion: 2
         x: 208
@@ -646,15 +382,169 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 59096878feabc5547abe14747fe0a7a2
-      internalID: -59644102
+      spriteID: 607e04802dea6b44db4ec46d690a4a04
+      internalID: 1011116043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: eyes-front_13
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3d5a03c04f7e47f448fe57abea219bb7
+      internalID: 485405865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: eyes-front_14
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 59b3a26d346efeb4d8e8802ea780f4de
+      internalID: 1234188161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: eyes-front_15
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f43334657f0915f489688eba36e186dc
+      internalID: 1970065455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: eyes-front_16
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b2d32b24b33ed045a3e04b514cf008c
+      internalID: -1578189594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: eyes-front_17
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6fe517a3988b76e4fb410580564e2195
+      internalID: 1938251073
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: eyes-front_18
+      rect:
+        serializedVersion: 2
+        x: 304
+        y: 0
+        width: 16
+        height: 16
+      alignment: 9
+      pivot: {x: 0.49750137, y: 0.5050069}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4d247c44bd6457247968cfb3689def58
+      internalID: 365559602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: eyes-front_19
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 0
+        width: 14
+        height: 16
+      alignment: 9
+      pivot: {x: 0.4979052, y: 0.4974967}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 57660cb827a68794abc798933150fa1f
+      internalID: 1878649066
       vertices: []
       indices: 
       edges: []
@@ -663,7 +553,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 9f6fef212c2b7ec4c9b4908b6847200f
+    spriteID: 86266d7ef4157454ea51ac26a9788b76
     internalID: 0
     vertices: []
     indices: 
@@ -673,31 +563,26 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      pupils_0: 423897784
-      pupils_1: -176536963
-      pupils_10: 397069183
-      pupils_11: 429910461
-      pupils_12: -1720374437
-      pupils_13: -853542853
-      pupils_14: -1726432213
-      pupils_15: -1395847280
-      pupils_16: 1835018085
-      pupils_17: -741292284
-      pupils_18: 747918690
-      pupils_19: 1601737197
-      pupils_2: 548526476
-      pupils_20: 438973307
-      pupils_21: -1649050381
-      pupils_22: -1599963984
-      pupils_23: -262446459
-      pupils_24: -59644102
-      pupils_3: -1804678261
-      pupils_4: -368801070
-      pupils_5: 207881140
-      pupils_6: 1072861668
-      pupils_7: -453723880
-      pupils_8: -379286159
-      pupils_9: -1497281737
+      eyes-front_0: -1952419049
+      eyes-front_1: -1527273218
+      eyes-front_10: 2092633034
+      eyes-front_11: -1468609601
+      eyes-front_12: 1011116043
+      eyes-front_13: 485405865
+      eyes-front_14: 1234188161
+      eyes-front_15: 1970065455
+      eyes-front_16: -1578189594
+      eyes-front_17: 1938251073
+      eyes-front_18: 365559602
+      eyes-front_19: 1878649066
+      eyes-front_2: -448929839
+      eyes-front_3: 391517536
+      eyes-front_4: 134141990
+      eyes-front_5: -665714653
+      eyes-front_6: 1833869040
+      eyes-front_7: -1744652610
+      eyes-front_8: 117695255
+      eyes-front_9: -756113401
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

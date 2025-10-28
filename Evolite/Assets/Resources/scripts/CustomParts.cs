@@ -1,39 +1,52 @@
 using UnityEngine;
 
+[ExecuteAlways]
 public class CustomPart : MonoBehaviour
 {
-    public string name;
-    public SpriteRenderer[] front;
-    public SpriteRenderer[] side;
-    public SpriteRenderer[] back;
-    public int currentIndex;
+    public Sprite[] front;
+    public Sprite[] side;
+    public Sprite[] back;
+    public SpriteRenderer partFront;
+    public SpriteRenderer partSide;
+    public SpriteRenderer partBack;
 
-    private void Awake()
+
+    private void Update()
     {
-        SetAllEnabled(false);
+        //SetSprite(currentIndex);
     }
 
-    /*public void Update()
+    public void SetSprite(int i, int Z)
     {
-        for (int i = 0; i < front.Length; i++)
+        if (Z < 0)
         {
-            if (i == currentIndex && front[i] != null)
-            {
-                front[i].enabled = true;
-            }
+            if (front != null && i > -1 && i < front.Length && partFront != null)
+                partFront.sprite = front[i];
             else
-            {
-                front[i].enabled = false;
-            }
+                partFront.sprite = null;
         }
-    }*/
-    private void SetAllEnabled(bool enabled)
-    {
-        foreach (var sr in front)
-            if (sr != null) sr.enabled = enabled;
-        foreach (var sr in side)
-            if (sr != null) sr.enabled = enabled;
-        foreach (var sr in back)
-            if (sr != null) sr.enabled = enabled;
+        else if (partFront != null)
+            partFront.sprite = null;
+
+        if (Z == 0)
+        {
+            if (side != null && i > -1 && i < side.Length && partSide != null)
+                partSide.sprite = side[i];
+            else
+                partFront.sprite = null;
+        }   
+        else if (partSide != null)
+            partSide.sprite = null;
+
+        if (Z > 0)
+        {
+            if (back != null && i > -1 && i < back.Length && partBack != null)
+                partBack.sprite = back[i];
+            else
+                partFront.sprite = null;
+        }
+        else if (partBack != null)
+            partBack.sprite = null;
     }
+    public void Refresh() => SetSprite(-1, 0);
 }
