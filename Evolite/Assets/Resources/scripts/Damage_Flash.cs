@@ -16,28 +16,24 @@ public class Damage_Flash : MonoBehaviour
 
     private Material originalMaterial;
     private bool isFlashing = false;
-    private Material loadedMat;
 
     private void Awake()
     {
         if (!isPlayer)
         {
             statsCreat = transform.parent.GetComponentInChildren<Creature_Stats>();
-            statsPlayer = null;
         }
         else
         {
             statsPlayer = GameObject.Find("Player Collider").GetComponent<Player_Stats>();
-            statsCreat = null;
         }
 
         rend = GetComponent<SpriteRenderer>();
-        originalMaterial = rend.material;
+        originalMaterial = rend.sharedMaterial;
     }
 
     private void Update()
     {
-        // Detecta dano e inicia flash se necessário
         if (!isFlashing)
         {
             if (!isPlayer && statsCreat != null && statsCreat.tomouDanoNoFrame)
@@ -50,9 +46,10 @@ public class Damage_Flash : MonoBehaviour
     private IEnumerator FlashCoroutine()
     {
         isFlashing = true;
-        rend.material = flashMaterial;
+
+        // troca temporariamente pelo material de flash
+        rend.sharedMaterial = flashMaterial;
         flashMaterial.SetColor("_FlashColor", flashColor);
-        rend.receiveShadows = false;
 
         float timer = 0f;
 
@@ -61,11 +58,11 @@ public class Damage_Flash : MonoBehaviour
             timer += Time.deltaTime;
             float currentAmount = Mathf.Lerp(1f, 0f, timer / flashTime);
             flashMaterial.SetFloat("_FlashAmount", currentAmount);
-            yield return null; // espera o próximo frame
+            yield return null;
         }
 
-        rend.material = originalMaterial;
-        rend.receiveShadows = true;
+        // volta pro material original
+        rend.sharedMaterial = originalMaterial;
         isFlashing = false;
     }
 }

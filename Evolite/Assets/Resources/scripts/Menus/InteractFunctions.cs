@@ -1,9 +1,12 @@
 using System.Collections;
+using Unity.Cinemachine;
 using UnityEngine;
 
 public class InteractFunctions : MonoBehaviour
 {
+    public GameObject customMenu;
     public Player_Stats stats;
+    public Player_General playerGeneral;
     public Transform player;
     public string action;
 
@@ -18,6 +21,7 @@ public class InteractFunctions : MonoBehaviour
     {
         stats = GameObject.Find("Player Collider").GetComponent<Player_Stats>();
         player = GameObject.Find("Player Collider").GetComponent<Transform>();
+        playerGeneral = GameObject.Find("Player Sprite").GetComponent<Player_General>();
         if (isFood)
         {
             isMature = true;
@@ -85,10 +89,21 @@ public class InteractFunctions : MonoBehaviour
 
     public void NestInteract()
     {
+        customMenu.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         player.position = new Vector3(transform.position.x, transform.position.y + .3f, transform.position.z);
         Player_Movement pMove = player.GetComponent<Player_Movement>();
+        MenuFunctions GM = GameObject.Find("GameMenager").GetComponent<MenuFunctions>();
+        CinemachineRotationComposer cameraRotate = GameObject.Find("FreeLook Camera").GetComponent<CinemachineRotationComposer>();
+        cameraRotate.Damping = Vector3.zero;
+        cameraRotate.TargetOffset = new Vector3(-0.85f, 0, 0);
         pMove.isAbleToMove = false;
-        //codigo pra deixar tudo invisível e por um efeito preto de fundo
+        GM.isAbleToPause = false;
+        playerGeneral.isCustomizing = true;
+        playerGeneral.lastMoveX = 0;
+        playerGeneral.lastMoveZ = -1;
+        customMenu.SetActive(true);
+        customMenu.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 
+        Time.timeScale = 0.0001f;
     }
 }

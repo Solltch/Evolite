@@ -109,23 +109,32 @@ public class Interact : MonoBehaviour
         Vector3 targetScale = Vector3.one * 0.8f;
         float elapsed = 0f;
 
-        // Enquanto a tecla está pressionada E o tempo ainda não acabou
+        // Enquanto a tecla está pressionada e o tempo não acabou
         while (Input.GetKey(interactKey) && elapsed < interactTime)
         {
             elapsed += Time.deltaTime;
             buttonChild.localScale = Vector3.Lerp(startScale, targetScale, elapsed / interactTime);
-
-            // Se o botão já chegou no tamanho alvo, interrompe e executa
-            if (Vector3.Distance(buttonChild.localScale, targetScale) < 0.01f)
-                break;
-
             yield return null;
         }
 
-        // Executa ação
+        if (elapsed < interactTime)
+        {
+            // volta o botão visualmente
+            yield return StartCoroutine(ReturnButton(buttonChild));
+            isInteracting = false;
+            yield break;
+        }
+
         targetItem.GetComponent<InteractFunctions>().Interact();
 
-        // Anima o botão voltando ao tamanho original
+        // Volta o botão visualmente
+        yield return StartCoroutine(ReturnButton(buttonChild));
+
+        isInteracting = false;
+    }
+
+    private IEnumerator ReturnButton(Transform buttonChild)
+    {
         float returnTime = 0.15f;
         Vector3 originalScale = Vector3.one * 0.58f;
         float t = 0f;
@@ -136,10 +145,9 @@ public class Interact : MonoBehaviour
             buttonChild.localScale = Vector3.Lerp(buttonChild.localScale, originalScale, t / returnTime);
             yield return null;
         }
-
         buttonChild.localScale = originalScale;
-        isInteracting = false;
     }
+
 
     private void OnDrawGizmosSelected()
     {

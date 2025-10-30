@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 18.665281
+      value: 0.225
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.2201653
+      value: -3.2211654
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -13.221865
+      value: 2.098
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
       propertyPath: m_LocalRotation.w
@@ -125,15 +125,48 @@ PrefabInstance:
       propertyPath: m_Name
       value: GM-Stud
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}
+      propertyPath: m_TagString
+      value: Interactable
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: -7511558181221131132, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}
     - {fileID: -5754084199372789682, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4985738177305949806}
   m_SourcePrefab: {fileID: 100100000, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}
 --- !u!4 &8193569853190803719 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}
   m_PrefabInstance: {fileID: 8520758971541550828}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &8862724466895604669 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}
+  m_PrefabInstance: {fileID: 8520758971541550828}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4985738177305949806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8862724466895604669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cf0dafcf951e154faa97425ea84ff93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  customMenu: {fileID: 0}
+  stats: {fileID: 0}
+  playerGeneral: {fileID: 0}
+  player: {fileID: 0}
+  action: 
+  isFood: 0
+  isMature: 0
+  isFruit: 0
+  isNest: 1

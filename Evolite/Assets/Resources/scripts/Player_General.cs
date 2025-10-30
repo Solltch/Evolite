@@ -44,7 +44,7 @@ public class Player_General : MonoBehaviour
     [Range(0.5f, 2)] public float eyeSize = 1;
     public Transform eye1;
     public Transform eye2;
-    [Range(0.5f, 2)] public float legSize = 1;
+    [Range(0.5f, 2)] public float feetSize = 1;
     public Transform leg1;
     public Transform leg2;
 
@@ -61,6 +61,12 @@ public class Player_General : MonoBehaviour
     public Slider cabecas;
     public Slider olhos;
     public Slider pupilas;
+
+    public Slider cabeSize;
+    public Slider olhoSize;
+    public Slider pataSize;
+    public Slider peSize;
+    public Slider characterSlider;
 
     void Awake()
     {
@@ -87,11 +93,16 @@ public class Player_General : MonoBehaviour
         eyePos = eyePart.transform.localPosition;
         pulPos = pupilPart.transform.localPosition;
         eye2Pos = eye2.transform.localPosition;
-        
+
         cabecas = GameObject.Find("Cabeça Slider").GetComponent<Slider>();
         olhos = GameObject.Find("Olho Slider").GetComponent<Slider>();
         pupilas = GameObject.Find("Pupila Slider").GetComponent<Slider>();
         acessorios = GameObject.Find("Acessorio Slider").GetComponent<Slider>();
+        cabeSize = GameObject.Find("Cabesize Slider").GetComponent<Slider>();
+        olhoSize = GameObject.Find("Olhosize Slider").GetComponent<Slider>();
+        pataSize = GameObject.Find("Patasize Slider").GetComponent<Slider>();
+        peSize = GameObject.Find("Pesize Slider").GetComponent<Slider>();
+        characterSlider = GameObject.Find("Character Slider").GetComponent<Slider>();
     }
 
     void Update()
@@ -108,17 +119,72 @@ public class Player_General : MonoBehaviour
 
         if (isCustomizing)
         {
+            bodyAcessoriesIndex = Convert.ToInt32(acessorios.value - 1);
+            headIndex = Convert.ToInt32(cabecas.value - 1);
+            eyeIndex = Convert.ToInt32(olhos.value - 1);
+            pupilIndex = Convert.ToInt32(pupilas.value - 1);
+
+            headSize = cabeSize.value;
+            eyeSize = olhoSize.value;
+            pawSize = pataSize.value;
+            feetSize = peSize.value;
+
+            if (characterSlider != null)
+            {
+                switch (characterSlider.value)
+                {
+                    case 0:
+                        lastMoveX = 1;
+                        lastMoveZ = 0;
+                        break;
+                    case 1:
+                        lastMoveX = 0;
+                        lastMoveZ = -1;
+                        break;
+                    case 2:
+                        lastMoveX = -1;
+                        lastMoveZ = 0;
+                        break;
+                    case 3:
+                        lastMoveX = 0;
+                        lastMoveZ = 1;
+                        break;
+                }
+
+                if (lastMoveX < 0)
+                {
+                    if (transform.localScale.x > 0)
+                        transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+                }
+                else if (transform.localScale.x < 0)
+                    transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+
+                if (lastMoveZ != 0)
+                    animator.SetFloat("Horizontal", 0);
+                else
+                    animator.SetFloat("Horizontal", lastMoveX);
+
+                animator.SetFloat("Vertical", lastMoveZ);
+            }
+
             Resize();
+
+            if (isAttacking)
+            {
+                stats.isAbleToMove = false;
+                Invoke(nameof (stats.ResetMovement), stats2.baseAttackSpeed);
+            }
+
         }
 
         if (lastMoveZ != -1)
         {
-            if (transform.localScale.y < 0)
-                eye2.transform.localScale = eyeSize * new Vector3(1, -1, 1);
+            if (transform.localScale.y > 0)
+                eye2.transform.localScale = eyeSize * new Vector3(1, 1, 1);
 
             eye1.gameObject.SetActive(false);
             eye2.transform.localPosition = new Vector3(eye2Pos.x - 0.02f, eye2Pos.y, eye2Pos.z);
-            pupilPart.transform.localPosition = pulPos + new Vector3(0.01f, 0.01f, 0);
+            pupilPart.transform.localPosition = pulPos + new Vector3(0f, 0f, 0);
 
             
         }
@@ -131,14 +197,7 @@ public class Player_General : MonoBehaviour
             eye2.transform.localPosition = eye2Pos;
             eyePart.transform.localPosition = eyePos;
             pupilPart.transform.localPosition = pulPos;
-
-            
         }
-
-        bodyAcessoriesIndex = Convert.ToInt32(acessorios.value - 1);
-        headIndex = Convert.ToInt32(cabecas.value - 1);
-        eyeIndex = Convert.ToInt32(olhos.value - 1);
-        pupilIndex = Convert.ToInt32(pupilas.value - 1);
 
     }
 
@@ -226,7 +285,7 @@ public class Player_General : MonoBehaviour
         paw2.localScale = -Vector3.one * pawSize;
         eye1.localScale = Vector3.one * eyeSize;
         eye2.localScale = new Vector3(1, -1, 1) * eyeSize;
-        leg1.localScale = Vector3.one * legSize;
-        leg2.localScale = -Vector3.one * legSize;
+        leg1.localScale = Vector3.one * feetSize;
+        leg2.localScale = new Vector3(1, -1, 1) * feetSize;
     }
 }

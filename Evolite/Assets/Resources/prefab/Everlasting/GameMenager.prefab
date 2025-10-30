@@ -45,9 +45,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82fbef04ff28e3a45a376ee3768b89ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerSkin: {fileID: 2100000, guid: 993d84cc710288640bf5bfae37cc2a85, type: 2}
+  playerSkin2: {fileID: 2100000, guid: 0a7d6ac5a984d7842bae8b5d07741dc2, type: 2}
+  playerEye: {fileID: 2100000, guid: 84fdd606e1604894ebb9cd1f5755264b, type: 2}
+  playerPupil: {fileID: 2100000, guid: 8e3f65618f7fa4e4baf89388737758a6, type: 2}
   pauseMenu: {fileID: 0}
+  customMenu: {fileID: 0}
   pauseButton: 27
+  isAbleToPause: 1
   isPaused: 0
+  pickedColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &8074288318468061392
 MonoBehaviour:
   m_ObjectHideFlags: 0

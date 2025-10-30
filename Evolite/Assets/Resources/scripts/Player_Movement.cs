@@ -36,7 +36,6 @@ public class Player_Movement : MonoBehaviour
     public float slopeGroundRay;
     public bool onSlope = false;
     private RaycastHit slopeHit;
-    private Vector3 groundNormal = Vector3.up;
 
     [Header("Comparações")]
     public bool isRunning;
@@ -378,7 +377,7 @@ public class Player_Movement : MonoBehaviour
         }
     }
 
-    private void ResetMovement()
+    public void ResetMovement()
     {
         if (currentAngle <= maxSlopeAngle)
         {
@@ -420,7 +419,5 @@ public class Player_Movement : MonoBehaviour
             Vector3 adjustedLookDir = camRight * lastRelativeDir.x + camForward * lastRelativeDir.z;
             transform.forward = adjustedLookDir.normalized;
         }
-
-
     }
 }
