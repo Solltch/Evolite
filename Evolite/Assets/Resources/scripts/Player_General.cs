@@ -215,7 +215,7 @@ public class Player_General : MonoBehaviour
         // Flip
         if (lastMoveX < 0)
         {
-            if (transform.localScale.x > 0)
+            if (transform.localScale.x > 0 && lastMoveZ == 0)
                 transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
         }
         else if (transform.localScale.x < 0)

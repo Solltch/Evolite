@@ -8,7 +8,7 @@ public class Look_Camera : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        cameraTransform = UnityEngine.Camera.main.transform;
+        cameraTransform = GameObject.Find("FreeLook Camera").GetComponent<Transform>(); ;
     }
 
     // Update is called once per frame

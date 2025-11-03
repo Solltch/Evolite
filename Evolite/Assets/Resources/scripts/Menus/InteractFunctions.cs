@@ -91,19 +91,39 @@ public class InteractFunctions : MonoBehaviour
     {
         customMenu.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         player.position = new Vector3(transform.position.x, transform.position.y + .3f, transform.position.z);
+
         Player_Movement pMove = player.GetComponent<Player_Movement>();
         MenuFunctions GM = GameObject.Find("GameMenager").GetComponent<MenuFunctions>();
         CinemachineRotationComposer cameraRotate = GameObject.Find("FreeLook Camera").GetComponent<CinemachineRotationComposer>();
+        CinemachineOrbitalFollow cameraDamping = GameObject.Find("FreeLook Camera").GetComponent<CinemachineOrbitalFollow>();
+        GameObject.Find("UsableMenus").SetActive(false);
+
+        cameraDamping.TrackerSettings.PositionDamping = Vector3.zero;
         cameraRotate.Damping = Vector3.zero;
-        cameraRotate.TargetOffset = new Vector3(-0.85f, 0, 0);
+        cameraDamping.TargetOffset = new Vector3(-0.75f, -0.4f, 0);
+        cameraRotate.TargetOffset = new Vector3(-0.75f, -0.4f, 0);
+
         pMove.isAbleToMove = false;
         GM.isAbleToPause = false;
+        GM.isPaused = true;
         playerGeneral.isCustomizing = true;
         playerGeneral.lastMoveX = 0;
         playerGeneral.lastMoveZ = -1;
         customMenu.SetActive(true);
         customMenu.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 
-        Time.timeScale = 0.0001f;
+
+
+        // Espera dois frame antes de pausar o tempo
+        StartCoroutine(FreezeNextFrame());
+    }
+
+    private IEnumerator FreezeNextFrame()
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            yield return null; // espera 2 frames
+        }
+        Time.timeScale = 0f;
     }
 }

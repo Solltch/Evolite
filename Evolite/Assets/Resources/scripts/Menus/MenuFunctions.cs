@@ -12,6 +12,7 @@ public class MenuFunctions : MonoBehaviour
     public Material playerPupil;
     public GameObject pauseMenu;
     public GameObject customMenu;
+    public GameObject UsableMenus;
     private Vector3 CMpos;
     public KeyCode pauseButton;
     public bool isAbleToPause = true;
@@ -23,7 +24,7 @@ public class MenuFunctions : MonoBehaviour
         CMpos = customMenu.GetComponent<RectTransform>().anchoredPosition;
         isAbleToPause = true;
         pauseMenu.SetActive(false);
-
+        UsableMenus = GameObject.Find("UsableMenus");
     }
 
     public void Update()
@@ -102,13 +103,14 @@ public class MenuFunctions : MonoBehaviour
     public void LeaveCustumization()
     {
         customMenu.GetComponent<RectTransform>().anchoredPosition = CMpos;
-        customMenu.SetActive(false);
         GameObject.Find("Player Collider").GetComponent<Player_Movement>().isAbleToMove = true;
+        UsableMenus.SetActive(true);
         GameObject.Find("Player Sprite").GetComponent<Player_General>().isCustomizing = false;
         Time.timeScale = 1f;
         CinemachineRotationComposer cameraRotate = GameObject.Find("FreeLook Camera").GetComponent<CinemachineRotationComposer>();
         cameraRotate.Damping = Vector2.zero * 0.5f;
         cameraRotate.TargetOffset = Vector3.zero;
         isPaused = false;
+        isAbleToPause = true;
     }
 }

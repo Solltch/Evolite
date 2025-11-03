@@ -31,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 3349795447046818200}
   serializedVersion: 2
   m_LocalRotation: {x: 0.11998015, y: -0.00000001517143, z: 0.0000000018335149, w: 0.99277633}
-  m_LocalPosition: {x: -0.018, y: 1.6789291, z: -4.7685847}
+  m_LocalPosition: {x: -0.018, y: 1.9151291, z: -4.7685847}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -95,7 +95,7 @@ MonoBehaviour:
   TargetOffset: {x: 0, y: 0, z: 0}
   TrackerSettings:
     BindingMode: 4
-    PositionDamping: {x: 0.5, y: 0.5, z: 0.5}
+    PositionDamping: {x: 0, y: 0, z: 0}
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
@@ -166,7 +166,7 @@ MonoBehaviour:
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
   TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 0.5, y: 0.5}
+  Damping: {x: 0, y: 0}
   Lookahead:
     Enabled: 0
     Time: 0
@@ -348,7 +348,7 @@ Transform:
   m_GameObject: {fileID: 5837294630419437416}
   serializedVersion: 2
   m_LocalRotation: {x: 0.119980164, y: -0.000000015171432, z: 0.0000000018335156, w: 0.99277633}
-  m_LocalPosition: {x: -0.018, y: 1.6789291, z: -4.7685847}
+  m_LocalPosition: {x: -0.018, y: 1.9151291, z: -4.7685847}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -474,7 +474,7 @@ MonoBehaviour:
   IgnoreTimeScale: 0
   WorldUpOverride: {fileID: 0}
   ChannelMask: -1
-  UpdateMethod: 1
+  UpdateMethod: 2
   BlendUpdateMethod: 1
   LensModeOverride:
     Enabled: 0

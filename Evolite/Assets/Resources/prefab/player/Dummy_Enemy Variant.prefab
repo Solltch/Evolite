@@ -124,8 +124,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseAttackDmg: 10
-  baseAttackSpeed: 0.9
-  attackDelay: 0.7
+  baseAttackSpeed: 0.95
+  attackDelay: 0.8
   ReadyToAttack: 1
   attackRange: 0.6
   isAttacking: 0
@@ -176,15 +176,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6371472365279318182, guid: 281bdc1ccc1f21f42929b5e75d63af06, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6371472365279318182, guid: 281bdc1ccc1f21f42929b5e75d63af06, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6371472365279318182, guid: 281bdc1ccc1f21f42929b5e75d63af06, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6371472365279318182, guid: 281bdc1ccc1f21f42929b5e75d63af06, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -312,6 +312,7 @@ MonoBehaviour:
   playerInSightRange: 0
   playerInAttackRange: 0
   isAttacking: 0
+  hpInFrame: 0
 --- !u!4 &8863167445222767802 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6371472365279318182, guid: 281bdc1ccc1f21f42929b5e75d63af06, type: 3}

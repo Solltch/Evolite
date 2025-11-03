@@ -7,6 +7,7 @@ public class Interact : MonoBehaviour
     public Camera cam;
     public Transform button;
     public TextMeshProUGUI action;
+    public MenuFunctions GM;
 
     public float rayRange = 5f;
     public float sphereRadius = 0.5f;
@@ -27,6 +28,7 @@ public class Interact : MonoBehaviour
     {
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
         button = GameObject.Find("InteractBut").GetComponent<Transform>();
+        GM = GameObject.Find("GameMenager").GetComponent<MenuFunctions>();
         originalButtonPos = button.position;
         buttonGroup = button.GetComponent<CanvasGroup>();
         buttonGroup.alpha = 0f;
@@ -67,27 +69,33 @@ public class Interact : MonoBehaviour
 
         if (targetItem != null)
         {
-            Vector3 screenPos = cam.WorldToScreenPoint(targetItem.transform.position);
-            buttonGroup.alpha = Mathf.Lerp(buttonGroup.alpha, 1f, Time.deltaTime * fadeSpeed);
-
-            action.text = targetItem.GetComponent<InteractFunctions>().action;
-
-            if (interactableOnScreen)
-                button.position = Vector3.Lerp(button.position, new Vector3(screenPos.x, screenPos.y - Screen.height * 0.1f, screenPos.z), 0.25f);
-            else
-                button.position = new Vector3(screenPos.x, screenPos.y - Screen.height * 0.1f, screenPos.z);
-
-            if (targetItem != null && Input.GetKeyDown(interactKey) && !isInteracting)
+            if (GM != null)
             {
-                StartCoroutine(Visual());
-            }
+                if (!GM.isPaused)
+                {
+                    Vector3 screenPos = cam.WorldToScreenPoint(targetItem.transform.position);
+                    buttonGroup.alpha = Mathf.Lerp(buttonGroup.alpha, 1f, Time.deltaTime * fadeSpeed);
 
-            if (Input.GetKeyDown(interactKey))
-            {
-                button.GetChild(1).localScale = Vector3.Lerp(button.GetChild(1).localScale, Vector3.one * 0.58f, fadeSpeed);
-                interactableOnScreen = true;
-                disappearTimer = disappearDelay;
-                return;
+                    action.text = targetItem.GetComponent<InteractFunctions>().action;
+
+                    if (interactableOnScreen)
+                        button.position = Vector3.Lerp(button.position, new Vector3(screenPos.x, screenPos.y - Screen.height * 0.1f, screenPos.z), 0.25f);
+                    else
+                        button.position = new Vector3(screenPos.x, screenPos.y - Screen.height * 0.1f, screenPos.z);
+
+                    if (targetItem != null && Input.GetKeyDown(interactKey) && !isInteracting)
+                    {
+                        StartCoroutine(Visual());
+                    }
+
+                    if (Input.GetKeyDown(interactKey))
+                    {
+                        button.GetChild(1).localScale = Vector3.Lerp(button.GetChild(1).localScale, Vector3.one * 0.58f, fadeSpeed);
+                        interactableOnScreen = true;
+                        disappearTimer = disappearDelay;
+                        return;
+                    }
+                }
             }
         }
         else

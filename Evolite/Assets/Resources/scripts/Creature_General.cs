@@ -41,6 +41,7 @@ public class Creature_General : MonoBehaviour
     [Header("Comparadores")]
     private bool isWalkingDelayed;
     public bool isAttacking;
+    public float hpInFrame;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Awake()
@@ -68,11 +69,18 @@ public class Creature_General : MonoBehaviour
 
         playerHumor = generalHumor;
 
+        hpInFrame = stats.curHealth;
     }
 
     // Update is called once per frame
     private void Update()
     {
+        if(hpInFrame < stats.curHealth)
+        {
+            SetHumor();
+        }
+        hpInFrame = stats.curHealth;
+
         if (agent != null)
         {
             playerInSightRange = Physics.CheckSphere(transform.position, sightRange, WIPlayer);
@@ -80,10 +88,12 @@ public class Creature_General : MonoBehaviour
 
             StateHandler();
 
-            if (playerInSightRange)
+            if (playerInSightRange && playerHumor == State.angry)
             {
-                if (playerInAttackRange) Attack();
-                else Perseguir();
+                if (playerInAttackRange) 
+                    Attack();
+                else 
+                    Perseguir();
             }
             else Patrulha();
 
@@ -112,29 +122,29 @@ public class Creature_General : MonoBehaviour
     }
 
     private void Patrulha()
-{
-    agent.stoppingDistance = 0;
-
-    if (!walkPointSet)
     {
-        NewWalkPoint();
-    }
+        agent.stoppingDistance = 0;
 
-    if (walkPointSet)
-    {
-        if (agent != null && agent.isActiveAndEnabled)
+        if (!walkPointSet)
         {
-            agent.isStopped = false;
-            agent.SetDestination(walkPoint);
+            NewWalkPoint();
         }
 
-        // Marca como não setado quando chegou
-        if (!agent.pathPending && agent.remainingDistance < 0.5f)
+        if (walkPointSet)
         {
-            walkPointSet = false;
+            if (agent != null && agent.isActiveAndEnabled)
+            {
+                agent.isStopped = false;
+                agent.SetDestination(walkPoint);
+            }
+
+            // Marca como não setado quando chegou
+            if (!agent.pathPending && agent.remainingDistance < 0.5f)
+            {
+                walkPointSet = false;
+            }
         }
     }
-}
 
     private IEnumerator SetDestinoDelay(Vector3 destino, float delay)
     {

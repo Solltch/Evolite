@@ -303,6 +303,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7280306859344919217}
+  - component: {fileID: 2199002801360366129}
   m_Layer: 0
   m_Name: Player
   m_TagString: Creature
@@ -327,6 +328,18 @@ Transform:
   - {fileID: 3949827892076935125}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2199002801360366129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3728467486961589754}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f666ffd75f8ea142971a2d0368afd9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4971595260921394076
 GameObject:
   m_ObjectHideFlags: 0
@@ -700,6 +713,7 @@ MonoBehaviour:
   cam: {fileID: 0}
   button: {fileID: 0}
   action: {fileID: 0}
+  GM: {fileID: 0}
   rayRange: 1
   sphereRadius: 0.5
   interactKey: 101
@@ -1237,7 +1251,7 @@ PrefabInstance:
     - target: {fileID: 681122388735509141, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: 'side.Array.data[0]'
       value: 
-      objectReference: {fileID: -1543875873, guid: 391efa35e821a9d4882a6fce8fa612bd, type: 3}
+      objectReference: {fileID: 571576941, guid: 391efa35e821a9d4882a6fce8fa612bd, type: 3}
     - target: {fileID: 681122388735509141, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: 'side.Array.data[1]'
       value: 
@@ -1249,7 +1263,7 @@ PrefabInstance:
     - target: {fileID: 681122388735509141, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: 'side.Array.data[3]'
       value: 
-      objectReference: {fileID: 571576941, guid: 391efa35e821a9d4882a6fce8fa612bd, type: 3}
+      objectReference: {fileID: -1543875873, guid: 391efa35e821a9d4882a6fce8fa612bd, type: 3}
     - target: {fileID: 681122388735509141, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: 'side.Array.data[4]'
       value: 
@@ -1257,7 +1271,7 @@ PrefabInstance:
     - target: {fileID: 681122388735509141, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: 'front.Array.data[0]'
       value: 
-      objectReference: {fileID: -1364116038, guid: 84fb149a3fbe43f44bbc882125a4894f, type: 3}
+      objectReference: {fileID: 183161784, guid: 84fb149a3fbe43f44bbc882125a4894f, type: 3}
     - target: {fileID: 681122388735509141, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: 'front.Array.data[1]'
       value: 
@@ -1269,7 +1283,7 @@ PrefabInstance:
     - target: {fileID: 681122388735509141, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: 'front.Array.data[3]'
       value: 
-      objectReference: {fileID: 183161784, guid: 84fb149a3fbe43f44bbc882125a4894f, type: 3}
+      objectReference: {fileID: -1364116038, guid: 84fb149a3fbe43f44bbc882125a4894f, type: 3}
     - target: {fileID: 681122388735509141, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: 'front.Array.data[4]'
       value: 
@@ -1281,6 +1295,14 @@ PrefabInstance:
     - target: {fileID: 809736524914919775, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: m_Name
       value: Player Sprite
+      objectReference: {fileID: 0}
+    - target: {fileID: 1109096342934784993, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1109096342934784993, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: m_Color.g
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2564141396752697166, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: m_Enabled

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6691319242031694569}
   - component: {fileID: 4149256818806537129}
   - component: {fileID: 8074288318468061392}
+  - component: {fileID: 685045496674957277}
   m_Layer: 0
   m_Name: GameMenager
   m_TagString: Untagged
@@ -51,11 +52,26 @@ MonoBehaviour:
   playerPupil: {fileID: 2100000, guid: 8e3f65618f7fa4e4baf89388737758a6, type: 2}
   pauseMenu: {fileID: 0}
   customMenu: {fileID: 0}
+  UsableMenus: {fileID: 0}
   pauseButton: 27
   isAbleToPause: 1
   isPaused: 0
   pickedColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &8074288318468061392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2594957682647420169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adc5e11a987c0d84f852834e0df65292, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dnaValue: {fileID: 0}
+  dnaText: {fileID: 0}
+--- !u!114 &685045496674957277
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
