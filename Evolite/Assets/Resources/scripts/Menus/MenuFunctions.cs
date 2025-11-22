@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using Button = UnityEngine.UI.Button;
 
 public class MenuFunctions : MonoBehaviour
 {
@@ -17,7 +18,9 @@ public class MenuFunctions : MonoBehaviour
     public KeyCode pauseButton;
     public bool isAbleToPause = true;
     public bool isPaused;
+    public bool isInSkillTree;
     public Color pickedColor;
+    public Button autoclick;
 
     public void Start()
     {
@@ -25,6 +28,8 @@ public class MenuFunctions : MonoBehaviour
         isAbleToPause = true;
         pauseMenu.SetActive(false);
         UsableMenus = GameObject.Find("UsableMenus");
+        autoclick = GameObject.Find("HeadButton").GetComponent<Button>();
+        autoclick.onClick.Invoke();
     }
 
     public void Update()
@@ -78,6 +83,8 @@ public class MenuFunctions : MonoBehaviour
             isPaused = false;
         }
     }
+
+    //CUSTOMIZAÇÃO DE PERSONAGEM
 
     public void PickPlayerColor(UnityEngine.UI.Button buttonClicked)
     {

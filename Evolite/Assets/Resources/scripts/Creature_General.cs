@@ -72,8 +72,18 @@ public class Creature_General : MonoBehaviour
         hpInFrame = stats.curHealth;
     }
 
-    // Update is called once per frame
-    private void Update()
+    private void OnEnable()
+    {
+        Ticker.OnTickAction += Tick;
+    }
+
+    private void OnDisable()
+    {
+        Ticker.OnTickAction -= Tick;
+    }
+
+    //roda a cada 0.2s
+    private void Tick()
     {
         if(hpInFrame < stats.curHealth)
         {

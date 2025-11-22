@@ -106,9 +106,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2278627626328316830}
     m_Modifications:
+    - target: {fileID: 3151136714934212900, guid: c15af2b740de91c44ad792c2fe6f81fb, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 4001270772709316101, guid: c15af2b740de91c44ad792c2fe6f81fb, type: 3}
       propertyPath: m_Name
       value: Centro
+      objectReference: {fileID: 0}
+    - target: {fileID: 4001270772709316101, guid: c15af2b740de91c44ad792c2fe6f81fb, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247763523598951607, guid: c15af2b740de91c44ad792c2fe6f81fb, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 4381032934124915903, guid: c15af2b740de91c44ad792c2fe6f81fb, type: 3}
       propertyPath: m_LocalPosition.x
@@ -149,6 +161,14 @@ PrefabInstance:
     - target: {fileID: 4381032934124915903, guid: c15af2b740de91c44ad792c2fe6f81fb, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6637838179216119959, guid: c15af2b740de91c44ad792c2fe6f81fb, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 8316610620582927564, guid: c15af2b740de91c44ad792c2fe6f81fb, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

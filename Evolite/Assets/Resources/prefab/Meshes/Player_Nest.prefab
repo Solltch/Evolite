@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -9100330999764824093, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.225
@@ -52,9 +56,21 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -1776562407531662397, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
       propertyPath: m_Name
-      value: Nest_11
+      value: Player_Nest
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 1224171391409500784, guid: 4316d3f6cd0317f40b835a74d998f439, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -128,6 +144,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}
       propertyPath: m_TagString
       value: Interactable
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: -7511558181221131132, guid: df6cf6f258c4a4779a62d9a0187c2c5a, type: 3}

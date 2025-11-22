@@ -36,8 +36,19 @@ public class InteractFunctions : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void OnEnable()
     {
+        Ticker.OnTickAction += Tick;
+    }
+
+    private void OnDisable()
+    {
+        Ticker.OnTickAction -= Tick;
+    }
+
+    //roda a cada 0.2s
+    private void Tick()
+    { 
         if (isFood && isMature != lastMatureState)
         {
             gameObject.tag = isMature ? "Interactable" : "Untagged";

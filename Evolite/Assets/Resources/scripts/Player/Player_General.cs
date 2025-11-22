@@ -30,6 +30,7 @@ public class Player_General : MonoBehaviour
     
     [Range(-1, 20)] public int bodyAcessoriesIndex;
     [Range(-1, 20)] public int headIndex;
+    [Range(-1, 20)] public int headAcessoriesIndex;
     [Range(-1, 20)] public int eyeIndex;
     [Range(-1, 20)] public int pupilIndex;
     [Range(-1, 20)] public int part4;
@@ -38,6 +39,8 @@ public class Player_General : MonoBehaviour
     
     [Range(0.5f, 2)] public float headSize = 1;
     public Transform head;
+    [Range(0.5f, 2)] public float headAcessSize = 1;
+    public Transform headAcess;
     [Range(0.5f, 2)] public float pawSize = 1;
     public Transform paw1;
     public Transform paw2;
@@ -48,21 +51,52 @@ public class Player_General : MonoBehaviour
     public Transform leg1;
     public Transform leg2;
 
+    public Vector3 headAcessOrigin;
+    [Range(2, 2)] public float headAcessX = 1;
+    [Range(2, 2)] public float headAcessY = 1;
+    [Range(2, 2)] public float headAcessZ = 1;
 
-    public bool wings;
-    public bool claws;
-    public bool fangs;
+
+    public bool Carniv;
+    public bool Herbiv;
+    public bool Presas;
+    public bool Garras;
+    public bool Abraco;
+    public bool Dieta;
+    public bool Resist;
+    public bool Gigant;
+    public bool Apex;
+    public bool Carnic;
+    public bool Regen;
+    public bool Olhos;
+    public bool Escond;
+    public bool PatasA;
+    public bool Flor;
+    public bool Couro;
+    public bool Esquiv;
+    public bool Salto;
+    public bool Chifre;
+    public bool Casco;
+    public bool Espinh;
+    public bool Titan;
+    public bool Presis;
+    public bool Veneno;
+    public bool Celere;
+    public bool Coloss;
+    public bool Ecoal;
+    public bool Furtiv;
+    public bool Invisi;
+
 
     public Vector3 eyePos;
     public Vector3 pulPos;
     public Vector3 eye2Pos;
 
-    public Slider acessorios;
-    public Slider cabecas;
-    public Slider olhos;
-    public Slider pupilas;
-
     public Slider cabeSize;
+    public Slider cabeAcessSize;
+    public Slider cabeAcessY;
+    public Slider cabeAcessX;
+    public Slider cabeAcessZ;
     public Slider olhoSize;
     public Slider pataSize;
     public Slider peSize;
@@ -76,12 +110,14 @@ public class Player_General : MonoBehaviour
         lastMoveZ = 1;
 
         head = GameObject.Find("Cabeça").GetComponent<Transform>();
+        headAcess = GameObject.Find("Head Acessory").GetComponent<Transform>();
         paw1 = GameObject.Find("Mão Direita").GetComponent<Transform>();
         paw2 = GameObject.Find("Mão Esquerda").GetComponent<Transform>();
         leg1 = GameObject.Find("Pé Direito").GetComponent<Transform>();
         leg2 = GameObject.Find("Pé Esquerdo").GetComponent<Transform>();
         eye1 = GameObject.Find("Olho").GetComponent<Transform>();
 
+        headAcessOrigin = headAcess.localPosition;
 
         eye2 = Instantiate(eye1, eye1.parent);
         eye2.localScale = new Vector3(eye1.localScale.x, -eye1.localScale.y, eye1.localScale.z);
@@ -94,15 +130,30 @@ public class Player_General : MonoBehaviour
         pulPos = pupilPart.transform.localPosition;
         eye2Pos = eye2.transform.localPosition;
 
-        cabecas = GameObject.Find("Cabeça Slider").GetComponent<Slider>();
-        olhos = GameObject.Find("Olho Slider").GetComponent<Slider>();
-        pupilas = GameObject.Find("Pupila Slider").GetComponent<Slider>();
-        acessorios = GameObject.Find("Acessorio Slider").GetComponent<Slider>();
         cabeSize = GameObject.Find("Cabesize Slider").GetComponent<Slider>();
-        olhoSize = GameObject.Find("Olhosize Slider").GetComponent<Slider>();
-        pataSize = GameObject.Find("Patasize Slider").GetComponent<Slider>();
-        peSize = GameObject.Find("Pesize Slider").GetComponent<Slider>();
+        cabeAcessSize = GameObject.Find("CabeAcesssize Slider").GetComponent<Slider>();
+        cabeAcessX = GameObject.Find("XAcess Slider").GetComponent<Slider>();
+        cabeAcessY = GameObject.Find("YAcess Slider").GetComponent<Slider>();
+        cabeAcessZ = GameObject.Find("ZAcess Slider").GetComponent<Slider>();
+        //olhoSize = GameObject.Find("Olhosize Slider").GetComponent<Slider>();
+        //pataSize = GameObject.Find("Patasize Slider").GetComponent<Slider>();
+        //peSize = GameObject.Find("Pesize Slider").GetComponent<Slider>();
         characterSlider = GameObject.Find("Character Slider").GetComponent<Slider>();
+
+        headSize = cabeSize.value;
+        headAcessSize = cabeAcessSize.value;
+        headAcessX = cabeAcessX.value;
+        headAcessY = cabeAcessY.value;
+        headAcessZ = cabeAcessZ.value;
+
+        if (lastMoveZ != -1)
+        {
+            headAcess.localPosition = new Vector3(headAcessOrigin.x + headAcessY - 0.02f, headAcessOrigin.y + headAcessZ, headAcess.localPosition.z);
+        }
+        else
+        {
+            headAcess.localPosition = new Vector3(headAcessOrigin.x + headAcessY, headAcessOrigin.y + headAcessX, headAcess.localPosition.z);
+        }
     }
 
     void Update()
@@ -119,15 +170,15 @@ public class Player_General : MonoBehaviour
 
         if (isCustomizing)
         {
-            bodyAcessoriesIndex = Convert.ToInt32(acessorios.value - 1);
-            headIndex = Convert.ToInt32(cabecas.value - 1);
-            eyeIndex = Convert.ToInt32(olhos.value - 1);
-            pupilIndex = Convert.ToInt32(pupilas.value - 1);
-
             headSize = cabeSize.value;
-            eyeSize = olhoSize.value;
-            pawSize = pataSize.value;
-            feetSize = peSize.value;
+            headAcessSize = cabeAcessSize.value;
+            headAcessX = cabeAcessX.value;
+            headAcessY = cabeAcessY.value;
+            headAcessZ = cabeAcessZ.value;
+            //eyeSize = olhoSize.value;
+            //pawSize = pataSize.value;
+            //feetSize = peSize.value;
+
 
             if (characterSlider != null)
             {
@@ -185,13 +236,18 @@ public class Player_General : MonoBehaviour
             eye1.gameObject.SetActive(false);
             eye2.transform.localPosition = new Vector3(eye2Pos.x - 0.02f, eye2Pos.y, eye2Pos.z);
             pupilPart.transform.localPosition = pulPos + new Vector3(0f, 0f, 0);
+            if(lastMoveZ != 1)
+                headAcess.localPosition = new Vector3(headAcessOrigin.x + headAcessY - 0.035f, headAcessOrigin.y + headAcessZ, headAcess.localPosition.z);
+            else
+                headAcess.localPosition = new Vector3(headAcessOrigin.x + headAcessY - 0.02f, headAcessOrigin.y + headAcessOrigin.y + headAcessX, headAcess.localPosition.z);
 
-            
         }
         else
         {
             if (transform.localScale.y > 0)
                 eye2.transform.localScale = eyeSize * new Vector3(1, -1, 1);
+
+            headAcess.localPosition = new Vector3(headAcessOrigin.x + headAcessY, headAcessOrigin.y + headAcessX, headAcess.localPosition.z);
 
             eye1.gameObject.SetActive(true);
             eye2.transform.localPosition = eye2Pos;
@@ -276,11 +332,13 @@ public class Player_General : MonoBehaviour
         eyePart.SetSprite(eyeIndex, Convert.ToInt32(lastMoveZ));
         parts[3].SetSprite(pupilIndex, Convert.ToInt32(lastMoveZ));
         pupilPart.SetSprite(pupilIndex, Convert.ToInt32(lastMoveZ));
+        parts[4].SetSprite(headAcessoriesIndex, Convert.ToInt32(lastMoveZ));
     }
 
     public void Resize()
     {
         head.localScale = Vector3.one * headSize;
+        headAcess.localScale = Vector3.one * headAcessSize;
         paw1.localScale = Vector3.one * pawSize;
         paw2.localScale = -Vector3.one * pawSize;
         eye1.localScale = Vector3.one * eyeSize;

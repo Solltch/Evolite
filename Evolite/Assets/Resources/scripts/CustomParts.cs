@@ -9,13 +9,6 @@ public class CustomPart : MonoBehaviour
     public SpriteRenderer partFront;
     public SpriteRenderer partSide;
     public SpriteRenderer partBack;
-
-
-    private void Update()
-    {
-        //SetSprite(currentIndex);
-    }
-
     public void SetSprite(int i, int Z)
     {
         if (Z < 0)
