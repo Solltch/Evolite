@@ -7,7 +7,6 @@ public class Ever_Rotator : MonoBehaviour
     void Start()
     {
         part = GetComponent<RectTransform>();
-        part.gameObject.SetActive(false);
     }
 
     void Update()

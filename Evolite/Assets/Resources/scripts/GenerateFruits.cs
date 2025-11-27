@@ -11,11 +11,19 @@ public class GenerateFruits : MonoBehaviour
     [Header("Limite de Frutas")]
     public int maxFruits = 5;
 
+    [Header("Chances e Sprites")]
+    public float poisonChance = 0.1f;
+    public float goldenChance = 0.05f; // Chance de 5%
+    public Sprite normalSprite;
+    public Sprite poisonSprite;
+    public Sprite goldenSprite;
+
     [Header("Controle de Crescimento")]
     public Vector3 startScale = Vector3.zero;
     public Vector3 targetScale = Vector3.one;
     public Vector3 spawnArea = new Vector3(2f, 0f, 2f);
     public float spawnHeight;
+    public int maxSpawnAttempts = 10;
 
     [Tooltip("Distância mínima entre as frutas")]
     public float spawnMargin = 0.5f;
@@ -40,8 +48,10 @@ public class GenerateFruits : MonoBehaviour
     {
         Vector3 randomPos = Vector3.zero;
         bool foundSpot = false;
+        int attempts = 0;
 
-        
+        while (attempts < maxSpawnAttempts)
+        {
             Vector3 candidate = new Vector3
             (
                 Random.Range(-spawnArea.x / 2f, spawnArea.x / 2f),
@@ -53,21 +63,45 @@ public class GenerateFruits : MonoBehaviour
             {
                 randomPos = candidate;
                 foundSpot = true;
+                break;
             }
+            attempts++;
+        }
 
         if (!foundSpot)
             yield break;
+
+        bool isPoisoned = Random.value < poisonChance;
+        bool isGolden = !isPoisoned && (Random.value < goldenChance); // Não pode ser dourada E venenosa
 
         GameObject child = Instantiate(fruit, transform);
         child.transform.localPosition = randomPos;
         child.transform.localScale = startScale;
 
+        SpriteRenderer sr = child.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            if (isGolden)
+            {
+                sr.sprite = goldenSprite;
+            }
+            else if (isPoisoned)
+            {
+                sr.sprite = poisonSprite;
+            }
+            else
+            {
+                sr.sprite = normalSprite;
+            }
+        }
+
         InteractFunctions[] components = child.GetComponents<InteractFunctions>();
         foreach (var comp in components)
         {
             comp.isMature = false;
-            comp.gameObject.tag = "Untagged";
-        }   
+            comp.isPoisoned = isPoisoned;
+            comp.isGolden = isGolden;
+        }
 
         float elapsed = 0f;
         while (elapsed < growDuration)

@@ -189,4 +189,9 @@ MonoBehaviour:
   isFood: 0
   isMature: 0
   isFruit: 0
+  isGolden: 0
+  isPoisoned: 0
+  isMeat: 0
   isNest: 1
+  unlockPartID: -1
+  unlockPartType: 0

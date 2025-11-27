@@ -21,7 +21,8 @@ public class PartButtonModiffier : MonoBehaviour
         comparator = GetComponent<PlayerSetPart>();
 
         // Pega imagem do filho real
-        childImage = transform.GetChild(0).GetComponent<Image>();
+        if(childImage != null )
+            childImage = transform.GetChild(0).GetComponent<Image>();
 
         // Lista dos outros botões
         PartButtonModiffier[] all = FindObjectsByType<PartButtonModiffier>(FindObjectsSortMode.None);
@@ -105,15 +106,18 @@ public class PartButtonModiffier : MonoBehaviour
         if (button.interactable)
         {
             // Ativa este ícone
-            childImage.color = button.colors.selectedColor;
-
-            // Desativa todos os outros ícones
-            foreach (var c in others)
+            if (childImage != null)
             {
-                if (c.button.interactable)
-                    c.childImage.color = c.button.colors.normalColor;
-                else
-                    c.childImage.color = c.button.colors.disabledColor;
+                childImage.color = button.colors.selectedColor;
+
+                // Desativa todos os outros ícones
+                foreach (var c in others)
+                {
+                    if (c.button.interactable)
+                        c.childImage.color = c.button.colors.normalColor;
+                    else
+                        c.childImage.color = c.button.colors.disabledColor;
+                }
             }
         }
         else

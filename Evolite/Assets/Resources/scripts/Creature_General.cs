@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
@@ -14,7 +15,9 @@ public class Creature_General : MonoBehaviour
     public Transform player;
     private NavMeshAgent agent;
     public Creature_Stats stats;
+    public Transform cam;
     public LayerMask WIGround, WIPlayer;
+    public Animator animator;
 
     [Header("Movimento")]
     public float walkingMoveSpeed = 2f;
@@ -36,20 +39,72 @@ public class Creature_General : MonoBehaviour
 
     [Header("Estados")]
     public float sightRange = 10f;
-    [HideInInspector] public bool playerInSightRange, playerInAttackRange;
+    public bool playerInSightRange, playerInAttackRange;
 
     [Header("Comparadores")]
     private bool isWalkingDelayed;
     public bool isAttacking;
     public float hpInFrame;
+    public bool isFleeing;
+
+    [Header("Animação")]
+    public float lastMoveX;
+    public float lastMoveZ;
+
+    [Header("Customização")]
+    public List<CustomPart> parts = new List<CustomPart>();
+    public CustomPart eyePart;
+    public CustomPart pupilPart;
+
+    public int bodyAcessoriesIndex;
+    public int headIndex;
+    public int headAcessoriesIndex;
+    public int FaceIndex;
+    public int eyeIndex;
+    public int pupilIndex;
+
+    public float headSize;
+    public float headAcessSize;
+    public float eyeSize;
+    public float pawSize;
+
+    public Transform head;
+    public Transform headAcess;
+    public Transform paw1;
+    public Transform paw2;
+    public Transform leg1;
+    public Transform leg2;
+    public Transform eye1;
+    public Transform eye2;
+
+    private Vector3 headAcessOrigin;
+    private Vector3 eyePos;
+    private Vector3 eye2Pos;
+    private Vector3 pulPos;
+
+    // Campos estáticos de cache foram removidos.
+    // private static Dictionary<int, int> raceCustomizationSeed = new Dictionary<int, int>();
+    // private static Dictionary<int, Color> raceColor = new Dictionary<int, Color>();
+    // private static Dictionary<int, Material> raceMaterial = new Dictionary<int, Material>();
+    public Material baseRaceMaterial;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+
+    Transform FindDeepChild(Transform parent, string name)
+    {
+        foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
+            if (child.name == name) return child;
+        return null;
+    }
+
     private void Awake()
     {
         player = GameObject.FindWithTag("Player")?.transform;
+        animator = transform.GetComponentInChildren<Animator>();
         agent = GetComponent<NavMeshAgent>();
         stats = GetComponentInChildren<Creature_Stats>();
         attack = GetComponentInChildren<Creature_Attack>();
+        cam = GameObject.Find("Main Camera").GetComponent<Transform>();
         isWalkingDelayed = false;
         if (SceneManager.GetActiveScene().buildIndex == 2)
         {
@@ -70,6 +125,10 @@ public class Creature_General : MonoBehaviour
         playerHumor = generalHumor;
 
         hpInFrame = stats.curHealth;
+
+        ApplyRaceSpecifics(); // Agora esta função fará apenas a customização
+        SetupParts();
+        ApplyRandomCustomization();
     }
 
     private void OnEnable()
@@ -85,7 +144,7 @@ public class Creature_General : MonoBehaviour
     //roda a cada 0.2s
     private void Tick()
     {
-        if(hpInFrame < stats.curHealth)
+        if (stats.curHealth < hpInFrame)
         {
             SetHumor();
         }
@@ -93,46 +152,75 @@ public class Creature_General : MonoBehaviour
 
         if (agent != null)
         {
-            playerInSightRange = Physics.CheckSphere(transform.position, sightRange, WIPlayer);
+            playerInSightRange = CanSeePlayer();
             playerInAttackRange = Physics.CheckSphere(transform.position, attack.attackRange - .1f, WIPlayer);
 
-            StateHandler();
+            UpdateRunState();
 
-            if (playerInSightRange && playerHumor == State.angry)
+            if (playerInSightRange)
             {
-                if (playerInAttackRange) 
-                    Attack();
-                else 
-                    Perseguir();
+                if (playerHumor == State.scared)
+                    Fuga();
+                else if (playerHumor == State.angry)
+                {
+                    isFleeing = false;
+                    if (playerInAttackRange)
+                        Attack();
+                    else
+                        Perseguir();
+                }
             }
-            else Patrulha();
+            else
+            {
+                isFleeing = false;
+                Patrulha();
+            }
 
             RotateAgent();
         }
+
+        if (lastMoveZ != 0)
+            animator.SetFloat("Horizontal", 0);
+        else
+            animator.SetFloat("Horizontal", lastMoveX);
+
+        animator.SetFloat("Horizontal", lastMoveX);
+        animator.SetFloat("Vertical", lastMoveZ);
+        animator.SetBool("Moving", agent.velocity.magnitude > 0.1f);
+        animator.SetBool("Running", stats.isRunning);
+
+        UpdateLastMove();
+        UpdateEyesAndHeadAcess();
+        ChangePart();
+        Resize();
+        FlipSprite();
+        // REMOVIDO: UpdateRunState() chamada duplicada
     }
 
-    private void StateHandler()
+    private void UpdateRunState()
     {
-        // Mode - Running
-        if (!stats.isExhausted)
+        bool isMoving = agent.velocity.sqrMagnitude > 0.01f;
+
+        bool shouldRun = isMoving && !stats.isExhausted && playerInSightRange && (playerHumor == State.scared || playerHumor == State.angry);
+
+        if (shouldRun)
         {
             moveState = MovementState.running;
             agent.speed = runningMoveSpeed;
             stats.isRunning = true;
         }
-
-        // Mode - Walking
         else
         {
             moveState = MovementState.walking;
             agent.speed = walkingMoveSpeed;
             stats.isRunning = false;
         }
-
     }
 
     private void Patrulha()
     {
+        if (isFleeing) return;
+
         agent.stoppingDistance = 0;
 
         if (!walkPointSet)
@@ -148,13 +236,40 @@ public class Creature_General : MonoBehaviour
                 agent.SetDestination(walkPoint);
             }
 
-            // Marca como não setado quando chegou
             if (!agent.pathPending && agent.remainingDistance < 0.5f)
             {
                 walkPointSet = false;
             }
         }
     }
+
+    private void Fuga()
+    {
+        isFleeing = true;
+
+        agent.stoppingDistance = 0;
+
+        if (!walkPointSet)
+        {
+            walkPoint = GetFleePoint();
+            walkPointSet = true;
+        }
+
+        if (walkPointSet)
+        {
+            if (agent != null && agent.isActiveAndEnabled)
+            {
+                agent.isStopped = false;
+                agent.SetDestination(walkPoint);
+            }
+
+            if (!agent.pathPending && agent.remainingDistance < 0.5f)
+            {
+                walkPointSet = false;
+            }
+        }
+    }
+
 
     private IEnumerator SetDestinoDelay(Vector3 destino, float delay)
     {
@@ -168,21 +283,65 @@ public class Creature_General : MonoBehaviour
 
     private void NewWalkPoint()
     {
-        Vector3 randomXZ = new Vector3(Random.Range(-walkPointRange, walkPointRange), 0, Random.Range(-walkPointRange, walkPointRange));
+        Vector3 randomXZ = new Vector3(
+            Random.Range(-walkPointRange, walkPointRange),
+            0,
+            Random.Range(-walkPointRange, walkPointRange));
+
         Vector3 candidate = transform.position + randomXZ;
 
-        if (Physics.Raycast(candidate + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, WIGround))
+        if (Physics.Raycast(candidate + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 30f, WIGround))
         {
             if (Vector3.Angle(hit.normal, Vector3.up) < 90f)
             {
                 if (Vector3.Distance(hit.point, nestPoint) <= maxDistance)
                 {
-                    walkPoint = hit.point;
-                    walkPointSet = true;
-                    Debug.DrawLine(transform.position, walkPoint, Color.green, 2f);
+                    NavMeshPath path = new NavMeshPath();
+
+                    if (agent.CalculatePath(hit.point, path) && path.status == NavMeshPathStatus.PathComplete)
+                    {
+                        walkPoint = hit.point;
+                        walkPointSet = true;
+                        Debug.DrawLine(transform.position, walkPoint, Color.green, 2f);
+                        return;
+                    }
                 }
             }
         }
+
+        walkPointSet = false;
+    }
+
+    private Vector3 GetFleePoint()
+    {
+        Vector3 fleeDir = (transform.position - player.position).normalized;
+
+        Vector3 target = transform.position + fleeDir * sightRange;
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(target, out hit, 3f, NavMesh.AllAreas))
+            return hit.position;
+
+        for (int i = 1; i <= 6; i++)
+        {
+            float angle = 25f * i;
+
+            // Direita
+            Vector3 dirRight = Quaternion.Euler(0, angle, 0) * fleeDir;
+            target = transform.position + dirRight * sightRange;
+
+            if (NavMesh.SamplePosition(target, out hit, 3f, NavMesh.AllAreas))
+                return hit.position;
+
+            // Esquerda
+            Vector3 dirLeft = Quaternion.Euler(0, -angle, 0) * fleeDir;
+            target = transform.position + dirLeft * sightRange;
+
+            if (NavMesh.SamplePosition(target, out hit, 3f, NavMesh.AllAreas))
+                return hit.position;
+        }
+
+        return transform.position;
     }
 
     private void Perseguir()
@@ -192,7 +351,8 @@ public class Creature_General : MonoBehaviour
         if (NavMesh.SamplePosition(player.position, out hit, 1f, NavMesh.AllAreas))
             agent.SetDestination(hit.position);
 
-        agent.speed = runningMoveSpeed;
+        // A velocidade é controlada por UpdateRunState(), removemos a atribuição direta
+        // agent.speed = runningMoveSpeed;
     }
 
     private void Attack()
@@ -202,10 +362,10 @@ public class Creature_General : MonoBehaviour
 
         Vector3 direction = player.position - transform.position;
         Quaternion lookRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10f);
+        transform.rotation = lookRotation;
 
     }
-    
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
@@ -229,7 +389,7 @@ public class Creature_General : MonoBehaviour
         {
             Vector3 direction = agent.velocity.normalized;
             Quaternion lookRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10f);
+            transform.rotation = lookRotation;
         }
     }
 
@@ -255,7 +415,7 @@ public class Creature_General : MonoBehaviour
 
     public void SetHumor()
     {
-        if(stats.courage > 1f)
+        if (stats.courage > 1f)
         {
             playerHumor = State.angry;
         }
@@ -264,4 +424,237 @@ public class Creature_General : MonoBehaviour
             playerHumor = State.scared;
         }
     }
+
+    private void UpdateLastMove()
+    {
+        if (agent.velocity.sqrMagnitude > 0.01f) // movendo
+        {
+            Vector3 vel = agent.velocity.normalized;
+
+            Vector3 camForward = cam.forward;
+            camForward.y = 0;
+            camForward.Normalize();
+
+            Vector3 camRight = cam.right;
+            camRight.y = 0;
+            camRight.Normalize();
+
+            float rawZ = Vector3.Dot(vel, camForward);
+            float rawX = Vector3.Dot(vel, camRight);
+
+            const float threshold = 0.5f;
+
+            int z = Mathf.Abs(rawZ) < threshold ? 0 : (rawZ > 0 ? 1 : -1);
+            int x = Mathf.Abs(rawX) < threshold ? 0 : (rawX > 0 ? 1 : -1);
+
+            // --- REGRA NOVA ---
+            // Impede X e Z de serem diferentes de 0 ao mesmo tempo
+            if (x != 0) z = 0;
+            else if (z != 0) x = 0;
+            // -------------------
+
+            lastMoveZ = z;
+            lastMoveX = x;
+        }
+        // parado = não altera lastMove
+    }
+
+
+    private bool CanSeePlayer()
+    {
+        // Verifica se há colisores do jogador (LayerMask WIPlayer) dentro do raio de visão (sightRange).
+        // Isso ignora obstáculos, sendo um cálculo "mais básico".
+        if (Physics.CheckSphere(transform.position, sightRange, WIPlayer))
+            return true;
+
+        return false;
+    }
+
+    private void Start()
+    {
+        SetupParts();
+        ApplyRandomCustomization(); //criatura gera tudo automaticamente
+    }
+
+    void SetupParts()
+    {
+        head = FindDeepChild(transform, "Cabeça");
+        headAcess = FindDeepChild(transform, "Head Acessory");
+        paw1 = FindDeepChild(transform, "Mão Direita");
+        paw2 = FindDeepChild(transform, "Mão Esquerda");
+        leg1 = FindDeepChild(transform, "Pé Direito");
+        leg2 = FindDeepChild(transform, "Pé Esquerdo");
+        eye1 = FindDeepChild(transform, "Olho");
+
+        headAcessOrigin = headAcess.localPosition;
+
+        eye2 = Instantiate(eye1, eye1.parent);
+        eye2.localScale = new Vector3(eye1.localScale.x, -eye1.localScale.y, eye1.localScale.z);
+        eye2.localPosition = new Vector3(eye1.localPosition.x, -eye1.localPosition.y, eye1.localPosition.z);
+
+        eyePart = eye2.Find("Eye").GetComponent<CustomPart>();
+        pupilPart = eye2.Find("Pupil").GetComponent<CustomPart>();
+        pupilPart.transform.localScale = new Vector3(1, -1, 1);
+
+        eyePos = eyePart.transform.localPosition;
+        pulPos = pupilPart.transform.localPosition;
+        eye2Pos = eye2.transform.localPosition;
+    }
+
+    public void ApplyRandomCustomization()
+    {
+        // Estes valores são gerados de forma 100% aleatória em tempo de execução
+        bodyAcessoriesIndex = Random.Range(-1, 4);
+        headIndex = Random.Range(0, 4);
+
+        // Se headIndex NÃO FOR 0 headAcessoriesIndex vira -1
+        if (headIndex != 0)
+            headAcessoriesIndex = -1;
+        else
+            headAcessoriesIndex = Random.Range(-1, 2);
+        FaceIndex = Random.Range(-1, 9);
+        eyeIndex = Random.Range(-1, 19);
+        pupilIndex = Random.Range(-1, 12);
+
+        headSize = Random.Range(0.6f, 1.4f);
+        headAcessSize = Random.Range(0.6f, 1.4f);
+        eyeSize = Random.Range(0.6f, 1.4f);
+        pawSize = Random.Range(0.7f, 1.3f);
+
+        Resize();
+        ChangePart();
+    }
+
+    void ChangePart()
+    {
+        if (parts.Count >= 6)
+        {
+            parts[0].SetSprite(bodyAcessoriesIndex, (int)lastMoveZ);
+            parts[1].SetSprite(headIndex, (int)lastMoveZ);
+            parts[2].SetSprite(eyeIndex, (int)lastMoveZ);
+            eyePart.SetSprite(eyeIndex, (int)lastMoveZ);
+            parts[3].SetSprite(pupilIndex, (int)lastMoveZ);
+            pupilPart.SetSprite(pupilIndex, (int)lastMoveZ);
+            parts[4].SetSprite(headAcessoriesIndex, (int)lastMoveZ);
+            parts[5].SetSprite(FaceIndex, (int)lastMoveZ);
+        }
+    }
+
+    void Resize()
+    {
+        head.localScale = Vector3.one * headSize;
+        headAcess.localScale = Vector3.one * headAcessSize;
+        paw1.localScale = Vector3.one * pawSize;
+        paw2.localScale = -Vector3.one * pawSize;
+        eye1.localScale = Vector3.one * eyeSize;
+        eye2.localScale = new Vector3(1, -1, 1) * eyeSize;
+    }
+
+    void UpdateEyesAndHeadAcess()
+    {
+        if (lastMoveZ != -1)
+        {
+            if (transform.localScale.y > 0)
+                eye2.transform.localScale = eyeSize * new Vector3(1, 1, 1);
+
+            eye1.gameObject.SetActive(false);
+            eye2.transform.localPosition = new Vector3(eye2Pos.x - 0.02f, eye2Pos.y, eye2Pos.z);
+
+            pupilPart.transform.localPosition = pulPos;
+
+            if (lastMoveZ != 1)
+                headAcess.localPosition = new Vector3(headAcessOrigin.x + 0.02f, headAcessOrigin.y + 0.02f, headAcess.localPosition.z);
+            else
+                headAcess.localPosition = new Vector3(headAcessOrigin.x + 0.04f, headAcessOrigin.y + 0.02f, headAcess.localPosition.z);
+        }
+        else
+        {
+            if (transform.localScale.y > 0)
+                eye2.transform.localScale = eyeSize * new Vector3(1, -1, 1);
+
+            headAcess.localPosition = new Vector3(headAcessOrigin.x, headAcessOrigin.y, headAcess.localPosition.z);
+
+            eye1.gameObject.SetActive(true);
+            eye2.transform.localPosition = eye2Pos;
+            eyePart.transform.localPosition = eyePos;
+            pupilPart.transform.localPosition = pulPos;
+        }
+    }
+
+    private void FlipSprite()
+    {
+        if (lastMoveX > 0)
+            transform.GetChild(0).transform.localScale = new Vector3(1, transform.GetChild(0).transform.localScale.y, transform.GetChild(0).transform.localScale.z);
+        else if (lastMoveX < 0f)
+            transform.GetChild(0).transform.localScale = new Vector3(-1, transform.GetChild(0).transform.localScale.y, transform.GetChild(0).transform.localScale.z);
+    }
+
+    private void ApplyRaceSpecifics()
+    {
+        // *** Lógica Revertida: Cada criatura terá um material único e cor aleatória. ***
+
+        // 1. Gera uma cor aleatória
+        Color instanceColor = new Color(Random.value, Random.value, Random.value, 1f);
+
+        // 2. Cria uma instância única do material base para esta criatura
+        Material instanceMat = new Material(baseRaceMaterial);
+        instanceMat.SetColor("_BaseColor", instanceColor); // Define a cor gerada aleatoriamente
+
+        // 3. Aplica o material na criatura
+        SpriteRenderer rend = GetComponentInChildren<SpriteRenderer>();
+        if (rend != null)
+        {
+            rend.sharedMaterial = instanceMat;
+
+            // Informa o script de Flash sobre qual é o material da instância
+            Damage_Flash flash = rend.GetComponent<Damage_Flash>();
+            if (flash != null)
+            {
+                flash.SetupRenderer(instanceMat);
+            }
+        }
+
+        // 4. Remove a chamada de Random.InitState, pois a customização não usa mais Seed.
+        // A customização aleatória de índices é feita no ApplyRandomCustomization(),
+        // que já está livre de seeder, pois removemos o cache estático.
+    }
+
+
+    public struct PartReference
+    {
+        public PlayerSetPart.PlayerPartType type;
+        public int id;
+
+        public PartReference(PlayerSetPart.PlayerPartType type, int id)
+        {
+            this.type = type;
+            this.id = id;
+        }
+    }
+
+    public PartReference GetUnlockablePart(Player_Unlocks unlocks)
+    {
+        List<PartReference> parts = new List<PartReference>()
+    {
+        new PartReference(PlayerSetPart.PlayerPartType.BodyAccessory, bodyAcessoriesIndex),
+        new PartReference(PlayerSetPart.PlayerPartType.Head, headIndex),
+        new PartReference(PlayerSetPart.PlayerPartType.HeadAccessory, headAcessoriesIndex),
+        new PartReference(PlayerSetPart.PlayerPartType.FaceAccessory, FaceIndex),
+        new PartReference(PlayerSetPart.PlayerPartType.Eye, eyeIndex),
+        new PartReference(PlayerSetPart.PlayerPartType.Pupil, pupilIndex)
+    };
+
+        // remove inválidos
+        parts.RemoveAll(p => p.id < 0);
+
+        // remove partes já desbloqueadas
+        List<PartReference> available = parts.FindAll(p => !unlocks.HasPart(p.type, p.id));
+
+        if (available.Count == 0)
+            return new PartReference(0, -1); // nada pra desbloquear
+
+        // retorna aleatória
+        return available[Random.Range(0, available.Count)];
+    }
+
 }

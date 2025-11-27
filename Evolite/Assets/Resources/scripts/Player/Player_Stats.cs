@@ -28,6 +28,7 @@ public class Player_Stats : MonoBehaviour
 
     public float runCost;
     public float jumpCost;
+    public float dashCost;
     public float staminaRecovery;
     public float restDelay;
     public float hungerDecaySpeed;
@@ -126,6 +127,13 @@ public class Player_Stats : MonoBehaviour
     public void JumpCost()
     {
         curStamina -= jumpCost;
+        gastouStaminaNoFrame = true;
+        return;
+    }
+
+    public void DashCost()
+    {
+        curStamina -= dashCost;
         gastouStaminaNoFrame = true;
         return;
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class Player_Movement : MonoBehaviour
@@ -11,6 +12,19 @@ public class Player_Movement : MonoBehaviour
     public float sneakingMoveSpeed;
     private Vector3 lastRelativeDir;
     public Vector3 moveInput;
+    public float lastMoveZ;
+    public float lastMoveX;
+
+    [Header("Dash")]
+    public float dashForce = 20f;
+    public float dashDuration = 0.15f;
+    public float dashCooldown = 1f;
+    public bool canDash = true;
+    private bool isDashing = false;
+
+    [Header("iFrames")]
+    public bool isInvulnerable = false;
+    public float iFrameDuration = 0.15f;
 
     [Header("Pulo")]
     public float ray;
@@ -25,9 +39,6 @@ public class Player_Movement : MonoBehaviour
     private Vector3 inercia;
 
     public LayerMask groundLayer;
-
-    [Header("Melhorias")]
-    public bool haveWings;
 
     [Header("Ladeiras")]
     public float currentAngle;
@@ -54,6 +65,7 @@ public class Player_Movement : MonoBehaviour
     public KeyCode runKey;
     public KeyCode sneakKey;
     public KeyCode jumpKey;
+    public KeyCode DashKey = KeyCode.Q;
 
     public MovementState state;
     public enum MovementState
@@ -69,10 +81,12 @@ public class Player_Movement : MonoBehaviour
     private Rigidbody rb;
     public Transform scale;
     public Player_Stats stats;
+    public Player_General stats2;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        stats2 = GameObject.Find("Player Sprite").GetComponent<Player_General>();
         rb = GetComponent<Rigidbody>();
         cameraTransform = UnityEngine.Camera.main.transform;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
@@ -88,6 +102,7 @@ public class Player_Movement : MonoBehaviour
         StateHandler();
         MyInputs();
         JumpInput();
+        DashInput();
     }
 
     private void FixedUpdate()
@@ -271,6 +286,53 @@ public class Player_Movement : MonoBehaviour
         isJumping = false;
     }
 
+    private void DashInput()
+    {
+        if (Input.GetKeyDown(DashKey) && canDash && !isDashing && !stats.isExhausted && stats2.skills.Esquiv)
+        {
+            stats.DashCost();
+            StartCoroutine(Dash());
+        }
+    }
+
+    private IEnumerator Dash()
+    {
+        canDash = false;
+        isDashing = true;
+        isInvulnerable = true;
+
+        // direção do dash
+        Vector3 dashDir;
+        if (moveInput.sqrMagnitude > 0.01f)
+            dashDir = moveInput.normalized;
+        else
+            dashDir = transform.forward;
+
+        // remove velocidade vertical para dash limpo
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+
+        // aplica força instantânea
+        rb.AddForce(dashDir * dashForce, ForceMode.VelocityChange);
+
+        // impede o Movement Handler de sobrescrever o dash
+        isAbleToMove = false;
+
+        // duração do dash + iFrames
+        yield return new WaitForSeconds(dashDuration);
+
+        // termina o dash
+        isDashing = false;
+        isAbleToMove = true;
+
+        // termina iFrames
+        yield return new WaitForSeconds(iFrameDuration - dashDuration);
+        isInvulnerable = false;
+
+        // cooldown
+        yield return new WaitForSeconds(dashCooldown);
+        canDash = true;
+    }
+
     private void MovementHandler()
     {
         if (!isAbleToMove) return; // bloqueia movimento horizontal se não puder se mover
@@ -388,36 +450,55 @@ public class Player_Movement : MonoBehaviour
 
     private void rotation()
     {
-        bool compar = moveInput == Vector3.zero;
-        if (!compar) // esta tendo input
+        Vector3 camForward = cameraTransform.forward;
+        camForward.y = 0;
+        camForward.Normalize();
+
+        Vector3 camRight = cameraTransform.right;
+        camRight.y = 0;
+        camRight.Normalize();
+
+        float rawX = Input.GetAxisRaw("Horizontal");
+        float rawZ = Input.GetAxisRaw("Vertical");
+
+        if (rawX != 0 || rawZ != 0)
         {
-            Vector3 camRight = cameraTransform.right;
-            Vector3 camForward = cameraTransform.forward;
-            camRight.y = 0;
-            camForward.y = 0;
-            camRight.Normalize();
-            camForward.Normalize();
+            // O jogador está se movendo:
 
-            // Salva a direção relativa ao eixo da câmera
-            lastRelativeDir = new Vector3(
-                Vector3.Dot(moveInput, camRight),
-                0,
-                Vector3.Dot(moveInput, camForward)
-            );
+            // 1. Calcula a direção de movimento (absoluta)
+            Vector3 moveDir = camForward * rawZ + camRight * rawX;
+            moveDir.y = 0;
 
-            transform.forward = moveInput;
+            // 2. Salva a última direção absoluta (para Dash)
+            lastRelativeDir = moveDir.normalized;
+
+            // 3. Salva os inputs relativos para uso no estado PARADO
+            lastMoveX = rawX;
+            lastMoveZ = rawZ;
+
+            // 4. Aplica a rotação instantânea
+            transform.forward = lastRelativeDir;
         }
         else
         {
-            Vector3 camRight = cameraTransform.right;
-            Vector3 camForward = cameraTransform.forward;
-            camRight.y = 0;
-            camForward.y = 0;
-            camRight.Normalize();
-            camForward.Normalize();
+            // O jogador está PARADO.
 
-            Vector3 adjustedLookDir = camRight * lastRelativeDir.x + camForward * lastRelativeDir.z;
-            transform.forward = adjustedLookDir.normalized;
+            // Usamos lastRelativeDir.sqrMagnitude > 0.01f para checar se houve movimento anterior.
+            if (lastRelativeDir.sqrMagnitude > 0.01f)
+            {
+                // Se o jogador estava se movendo, recalcule a direção desejada (targetDir)
+                // usando os inputs relativos salvos (lastRawX/Z) e a rotação ATUAL da câmera.
+                // Isso faz o personagem manter a orientação RELATIVA à câmera (ex: "olhando para trás")
+                // e acompanhar a rotação da câmera instantaneamente (sem LERP).
+
+                Vector3 targetDir = camForward * lastMoveZ + camRight * lastMoveX;
+                targetDir.y = 0;
+
+                if (targetDir.sqrMagnitude > 0.01f)
+                {
+                    transform.forward = targetDir.normalized;
+                }
+            }
         }
     }
 }

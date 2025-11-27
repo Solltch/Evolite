@@ -1,8 +1,12 @@
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
+using MovementState = Creature_General.MovementState;
 
 public class Particle_Activate : MonoBehaviour
 {
-    public Player_Movement stats;
+    public Player_Movement statsP;
+    public Creature_General statsC;
+    public bool isPlayer;
     public bool isRunning;
     public bool isGrounded;
     public bool onSlope;
@@ -11,24 +15,62 @@ public class Particle_Activate : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        if(isPlayer)
+        {
+            statsP = GameObject.Find("Player Collider").GetComponent<Player_Movement>();
+        }
+        else
+            statsC = transform.GetComponentInParent<Creature_General>();
+
+        particles = GetComponentInChildren<ParticleSystem>();
     }
 
     // Update is called once per frame
-    void Update()
+    private void OnEnable()
     {
-        isRunning = stats.isRunning;
-        isGrounded = stats.isGrounded;
-        onSlope = stats.onSlope;
+        Ticker.OnTickAction += Tick;
+    }
 
-        if (isRunning && isGrounded || onSlope && stats.currentAngle > stats.maxSlopeAngle)
+    private void OnDisable()
+    {
+        Ticker.OnTickAction -= Tick;
+    }
+
+    //roda a cada 0.2s
+    private void Tick()
+    {
+        if (isPlayer)
         {
-            if (!particles.isPlaying)
-                particles.Play();
+            isRunning = statsP.isRunning;
+            isGrounded = statsP.isGrounded;
+            onSlope = statsP.onSlope;
+
+            if (isRunning && isGrounded || onSlope && statsP.currentAngle > statsP.maxSlopeAngle)
+            {
+                if (!particles.isPlaying)
+                    particles.Play();
+            }
+            else
+            {
+                if (particles.isPlaying)
+                    particles.Stop();
+            }
         }
         else
         {
-            if (particles.isPlaying)
-                particles.Stop();
+            isRunning = statsC.moveState == MovementState.running;
+
+            if (isRunning)
+            {
+                if (!particles.isPlaying)
+                    particles.Play();
+            }
+            else
+            {
+                if (particles.isPlaying)
+                    particles.Stop();
+            }
         }
+
     }
 }

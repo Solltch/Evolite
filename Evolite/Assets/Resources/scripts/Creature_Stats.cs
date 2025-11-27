@@ -1,5 +1,8 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using MovementState = Creature_General.MovementState;
 
 public class Creature_Stats : MonoBehaviour
 {
@@ -25,6 +28,13 @@ public class Creature_Stats : MonoBehaviour
     public float maxStamina;
     public float curStamina;
 
+    [Header("Veneno")]
+    public float poisonTickDamage = 1f; // Dano por tick do veneno
+    public float poisonTickInterval = 1f; // Intervalo entre ticks de dano
+    private float poisonEndTime; // Tempo em que o veneno irá parar
+    public bool isPoisoned = false;
+    private Coroutine poisonCoroutine; // Para controlar a rotina de dano
+
     [Header("Stamina e Movimento")]
     public float runCost = 5f;
     public float staminaRecovery;
@@ -34,72 +44,71 @@ public class Creature_Stats : MonoBehaviour
     private float restTimer;
     private bool gastouStaminaNoFrame = false;
     public bool tomouDanoNoFrame = false;
-    private float hpNoFrame;
+    public bool justTookDamage = false;
 
     private void Awake()
     {
-        // Referências seguras
-        if (particles == null)
-            particles = GetComponentInChildren<ParticleSystem>();
-
-        if (flash == null && sprite != null)
-            flash = sprite.GetComponent<Damage_Flash>();
-
         if (agent == null)
             agent = GetComponentInParent<NavMeshAgent>();
-
-        if (sprite == null && transform.parent != null)
-            sprite = transform.parent.Find("Dummy_Sprite");
-
-        if (attack == null)
-            attack = GetComponentInChildren<Creature_Attack>();
 
         if (general == null)
             general = GetComponentInParent<Creature_General>();
 
-        // Inicialização de valores
+        if (attack == null)
+            attack = GetComponentInChildren<Creature_Attack>();
+
+        if (sprite == null && transform.parent != null)
+            sprite = transform.parent.Find("Dummy_Sprite");
+
+        if (flash == null && sprite != null)
+            flash = sprite.GetComponent<Damage_Flash>();
+
+        if (particles == null)
+            particles = GetComponentInChildren<ParticleSystem>();
+
         curHealth = maxHealth;
         curStamina = maxStamina;
         staminaRecovery = maxStamina / 10f;
-        hpNoFrame = curHealth;
+
     }
+
 
     private void Update()
     {
-        // Verifica se tomou dano
-        tomouDanoNoFrame = !Mathf.Approximately(hpNoFrame, curHealth);
-        hpNoFrame = curHealth;
 
-        // Controla partículas
         if (particles != null)
         {
-            if (isRunning && !particles.isPlaying)
+            if (general.moveState == MovementState.running && !particles.isPlaying)
+            {
+                isRunning = true;
                 particles.Play();
-            else if (!isRunning && particles.isPlaying)
+            }
+            else if (general.moveState != MovementState.running && particles.isPlaying)
+            {
+                isRunning = false;
                 particles.Stop();
+            }
         }
 
-        // Rotaciona o sprite para acompanhar o pai
-        if (sprite != null)
-            sprite.rotation = Quaternion.Euler(sprite.rotation.eulerAngles.x, transform.parent.rotation.eulerAngles.y, sprite.rotation.eulerAngles.z);
+
+        if (isPoisoned && Time.time >= poisonEndTime)
+        {
+            isPoisoned = false;
+            // Opcional: Efeito visual/sonoro de fim de veneno
+        }
+
     }
 
     private void FixedUpdate()
     {
         gastouStaminaNoFrame = false;
 
-        // Aqui você deve definir isRunning e isGrounded baseado na entrada ou IA
-        // Exemplo: isRunning = agent.velocity.magnitude > 0.1f;
-        // Exemplo: isGrounded = true; // placeholder
-
-        // Gasto de stamina
         if (isRunning && !isExhausted)
         {
             curStamina -= runCost * Time.fixedDeltaTime;
             gastouStaminaNoFrame = true;
         }
 
-        // Controle de descanso
         if (gastouStaminaNoFrame)
             restTimer = 0f;
         else
@@ -107,8 +116,10 @@ public class Creature_Stats : MonoBehaviour
 
         Rest();
 
-        // Verifica exaustão
-        isExhausted = curStamina <= 0.01f;
+        if (curStamina <= 0.01f)
+            isExhausted = true;
+        else if (Mathf.Approximately(curStamina, maxStamina))
+            isExhausted = false;
 
         Limitador();
     }
@@ -119,12 +130,73 @@ public class Creature_Stats : MonoBehaviour
             curStamina += staminaRecovery * Time.fixedDeltaTime;
     }
 
+    public void ApplyPoison(float duration)
+    {
+        // Se já estiver envenenado, reinicia a duração e o dano.
+        if (isPoisoned)
+        {
+            // Se já há uma rotina rodando, paramos para evitar duplicidade
+            if (poisonCoroutine != null)
+            {
+                StopCoroutine(poisonCoroutine);
+            }
+        }
+
+        isPoisoned = true;
+
+        // Define o tempo final do veneno
+        poisonEndTime = Time.time + duration;
+
+        // Inicia a rotina de dano por tick
+        poisonCoroutine = StartCoroutine(PoisonDamageRoutine(duration));
+    }
+
+    // NOVO: Coroutine para aplicar dano por tick
+    private IEnumerator PoisonDamageRoutine(float duration)
+    {
+        float timer = 0f;
+        while (timer < duration)
+        {
+            // Aplica o dano do veneno (diretamente, sem chamar TakeDamage para evitar loop)
+            curHealth -= poisonTickDamage;
+            Limitador(); // Garante que a vida não exceda os limites
+
+            // Opcional: Efeito visual/sonoro de tick de dano
+
+            if (curHealth <= 0f)
+            {
+                Die();
+                yield break; // Sai da coroutine se a criatura morrer
+            }
+
+            timer += poisonTickInterval;
+            yield return new WaitForSeconds(poisonTickInterval);
+        }
+
+        // Força a desativação se a duração terminar
+        isPoisoned = false;
+    }
+
     public void TakeDamage(float damage)
     {
         curHealth -= damage;
         Limitador();
+        general.SetHumor();
 
-        if (curHealth <= 0f)
+        Debug.Log("Inimigo Apanhou");
+
+        // Mantemos a flag para o caso de outros sistemas precisarem saber
+        justTookDamage = true;
+
+        // A chamada direta é a forma mais segura de garantir o flash:
+        if (flash != null)
+        {
+            // Se a coroutine já estiver rodando, o StartCoroutine tenta rodar uma nova,
+            // mas o Damage_Flash usa a flag 'isFlashing' para se proteger contra isso.
+            StartCoroutine(flash.FlashCoroutine());
+        }
+
+        if (curHealth <= 1f)
             Die();
     }
 
@@ -139,37 +211,52 @@ public class Creature_Stats : MonoBehaviour
         if (isDead) return;
         isDead = true;
 
-        // Para partículas completamente
-        if (particles != null)
-            particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            particles.gameObject.SetActive(false);
+        // 1. DESATIVAÇÃO DE MOVIMENTO/LÓGICA
+        if (general != null)
+            general.enabled = false;
 
-        transform.parent.localRotation = Quaternion.Euler(transform.parent.localRotation.eulerAngles.x, transform.parent.localRotation.eulerAngles.y, 90f);
+        if (attack != null)
+            attack.enabled = false;
 
-        // Desativa NavMeshAgent
         if (agent != null)
         {
             agent.ResetPath();
             agent.velocity = Vector3.zero;
-            agent.enabled = false;
+            agent.enabled = false; // Desativa o NavMeshAgent para parar completamente
         }
 
-        // Desativa ataque
-        if (attack != null)
-            attack.enabled = false;
+        // 2. EFEITOS E PARTICULAS
+        if (particles != null)
+        {
+            // Para as partículas e desativa o GameObject delas
+            particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            particles.gameObject.SetActive(false);
+        }
 
-        // Desativa IA/movimento
-        if (general != null)
-            general.enabled = false;
+        // 3. MANIPULAÇÃO VISUAL (SPRITE)
+        if (sprite != null)
+        {
+            // OPÇÃO 1: Desativar todos os componentes SpriteRenderer nos filhos
+            GameObject spriteParts = sprite.GetChild(0).gameObject;
+            spriteParts.SetActive(false);
 
-        // Adiciona InteractFunctions de forma segura
+            sprite.GetComponent<SpriteRenderer>().enabled = true;
+        }
+
+        // 4. TRANSFORMAÇÃO EM ITEM INTERAGÍVEL
+        // Adiciona o componente de interação e o configura
         if (GetComponent<InteractFunctions>() == null)
         {
             InteractFunctions interact = gameObject.AddComponent<InteractFunctions>();
             interact.isFood = true;
+            interact.isMeat = true;
+            interact.action = "Devorar";
         }
 
-        // Define a tag
+        // Altera a Tag para Interagível
         gameObject.tag = "Interactable";
+
+        // OPÇÃO 2: Se você quiser desativar o GameObject que segura a criatura (parent)
+        // Desativar o parent pode quebrar outras referências. É melhor desativar a lógica e o visual.
     }
 }

@@ -12,6 +12,10 @@ GameObject:
   - component: {fileID: 4149256818806537129}
   - component: {fileID: 8074288318468061392}
   - component: {fileID: 685045496674957277}
+  - component: {fileID: 4244677268092179081}
+  - component: {fileID: 4188177267506911432}
+  - component: {fileID: 1509947807924693637}
+  - component: {fileID: 4741508376806306710}
   m_Layer: 0
   m_Name: GameMenager
   m_TagString: Untagged
@@ -46,17 +50,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82fbef04ff28e3a45a376ee3768b89ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  user:
+    id: 0
+    senha: 
+    username: 
+  loggedUser:
+    id: 0
+    senha: 
+    username: 
+  criatura:
+    id: 0
+    id_criador: 0
+    nome: 
+  criaturaAtual:
+    id: 0
+    id_criador: 0
+    nome: 
+  usuarioApi: {fileID: 0}
+  criaturaApi: {fileID: 0}
+  criatParteApi: {fileID: 0}
+  usernameInputField: {fileID: 0}
+  senhaInputField: {fileID: 0}
+  console: {fileID: 0}
+  playerGeneral: {fileID: 0}
   playerSkin: {fileID: 2100000, guid: 993d84cc710288640bf5bfae37cc2a85, type: 2}
   playerSkin2: {fileID: 2100000, guid: 0a7d6ac5a984d7842bae8b5d07741dc2, type: 2}
+  playerSkin3: {fileID: 2100000, guid: 73126d2cf13a50a48ab0d507daf2b482, type: 2}
   playerEye: {fileID: 2100000, guid: 84fdd606e1604894ebb9cd1f5755264b, type: 2}
   playerPupil: {fileID: 2100000, guid: 8e3f65618f7fa4e4baf89388737758a6, type: 2}
   pauseMenu: {fileID: 0}
   customMenu: {fileID: 0}
   UsableMenus: {fileID: 0}
+  skillTree: {fileID: 0}
   pauseButton: 27
+  skillTreeButton: 9
   isAbleToPause: 1
   isPaused: 0
+  isInSkillTree: 0
+  isIngame: 0
   pickedColor: {r: 0, g: 0, b: 0, a: 0}
+  autoclick: {fileID: 0}
 --- !u!114 &8074288318468061392
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85,3 +118,55 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dnaValue: {fileID: 0}
   dnaText: {fileID: 0}
+--- !u!114 &4244677268092179081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2594957682647420169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40b2abcee4499ff48ac9a609f2957181, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tickTime: 0.2
+--- !u!114 &4188177267506911432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2594957682647420169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adc5e11a987c0d84f852834e0df65292, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dnaValue: {fileID: 0}
+  dnaText: {fileID: 0}
+--- !u!114 &1509947807924693637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2594957682647420169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61badca4a5e316a43aeba672dd57ffbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseUrl: http://localhost/Evolite/criat_parte/
+--- !u!114 &4741508376806306710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2594957682647420169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb00172f69fa8a84094aa5674e581b69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

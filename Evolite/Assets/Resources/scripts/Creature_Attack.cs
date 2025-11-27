@@ -15,8 +15,8 @@ public class Creature_Attack : MonoBehaviour
 
     [Header("Componentes")]
     public CapsuleCollider attackCollider;
-    public MeshRenderer meshRenderer;
     public Creature_General race;
+    public Player_Movement plrMovement;
 
     public List<Creature_Stats> enemiesInRange = new List<Creature_Stats>();
     public Player_Stats playerStats;
@@ -25,10 +25,8 @@ public class Creature_Attack : MonoBehaviour
     public void Awake()
     {
         attackCollider = GetComponent<CapsuleCollider>();
-        meshRenderer = GetComponent<MeshRenderer>();
         race = GetComponentInParent<Creature_General>();
         attackCollider.enabled = true;
-        meshRenderer.enabled = false;
     }
 
     public void OnTriggerEnter(Collider other)
@@ -78,6 +76,8 @@ public class Creature_Attack : MonoBehaviour
 
     public void DealDamage()
     {
+        if (plrMovement.isInvulnerable) return;
+
         foreach (var enemy in enemiesInRange)
         {
             if (enemy != null)
@@ -90,11 +90,9 @@ public class Creature_Attack : MonoBehaviour
 
     public void DisableHitbox()
     {
-        meshRenderer.enabled = false;
     }
     public void EnableHitBox()
     {
-        meshRenderer.enabled = true;
         Invoke(nameof(DisableHitbox), 0.1f);
     }
 

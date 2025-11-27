@@ -175,6 +175,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: headAcessories-front_3
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4d4b02102aca3034799085b11353a1d5
+      internalID: 1323252948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -192,6 +214,7 @@ TextureImporter:
       headAcessories-front_0: 2111935860
       headAcessories-front_1: -1359307333
       headAcessories-front_2: 1257190167
+      headAcessories-front_3: 1323252948
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -8,6 +8,7 @@ public class Interact : MonoBehaviour
     public Transform button;
     public TextMeshProUGUI action;
     public MenuFunctions GM;
+    public Player_General plr;
 
     public float rayRange = 5f;
     public float sphereRadius = 0.5f;
@@ -21,7 +22,7 @@ public class Interact : MonoBehaviour
     private bool isInteracting;
     private Vector3 originalButtonPos;
     private float disappearTimer;
-    private CanvasGroup buttonGroup;
+    public CanvasGroup buttonGroup;
     
 
     void Awake()
@@ -29,6 +30,7 @@ public class Interact : MonoBehaviour
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
         button = GameObject.Find("InteractBut").GetComponent<Transform>();
         GM = GameObject.Find("GameMenager").GetComponent<MenuFunctions>();
+        plr = GameObject.Find("Player Sprite").GetComponent<Player_General>();
         originalButtonPos = button.position;
         buttonGroup = button.GetComponent<CanvasGroup>();
         buttonGroup.alpha = 0f;
@@ -73,27 +75,30 @@ public class Interact : MonoBehaviour
             {
                 if (!GM.isPaused)
                 {
-                    Vector3 screenPos = cam.WorldToScreenPoint(targetItem.transform.position);
-                    buttonGroup.alpha = Mathf.Lerp(buttonGroup.alpha, 1f, Time.deltaTime * fadeSpeed);
-
-                    action.text = targetItem.GetComponent<InteractFunctions>().action;
-
-                    if (interactableOnScreen)
-                        button.position = Vector3.Lerp(button.position, new Vector3(screenPos.x, screenPos.y - Screen.height * 0.1f, screenPos.z), 0.25f);
-                    else
-                        button.position = new Vector3(screenPos.x, screenPos.y - Screen.height * 0.1f, screenPos.z);
-
-                    if (targetItem != null && Input.GetKeyDown(interactKey) && !isInteracting)
+                    if ((plr.skills.Carniv == true && targetItem.GetComponent<InteractFunctions>().isMeat == true) || (plr.skills.Herbiv == true && targetItem.GetComponent<InteractFunctions>().isFruit == true) || (targetItem.GetComponent<InteractFunctions>().isMeat == false && targetItem.GetComponent<InteractFunctions>().isFruit == false))
                     {
-                        StartCoroutine(Visual());
-                    }
+                        Vector3 screenPos = cam.WorldToScreenPoint(targetItem.transform.position);
+                        buttonGroup.alpha = Mathf.Lerp(buttonGroup.alpha, 1f, Time.deltaTime * fadeSpeed);
 
-                    if (Input.GetKeyDown(interactKey))
-                    {
-                        button.GetChild(1).localScale = Vector3.Lerp(button.GetChild(1).localScale, Vector3.one * 0.58f, fadeSpeed);
-                        interactableOnScreen = true;
-                        disappearTimer = disappearDelay;
-                        return;
+                        action.text = targetItem.GetComponent<InteractFunctions>().action;
+
+                        if (interactableOnScreen)
+                            button.position = Vector3.Lerp(button.position, new Vector3(screenPos.x, screenPos.y - Screen.height * 0.1f, screenPos.z), 0.25f);
+                        else
+                            button.position = new Vector3(screenPos.x, screenPos.y - Screen.height * 0.1f, screenPos.z);
+
+                        if (targetItem != null && Input.GetKeyDown(interactKey) && !isInteracting)
+                        {
+                            StartCoroutine(Visual());
+                        }
+
+                        if (Input.GetKeyDown(interactKey))
+                        {
+                            button.GetChild(1).localScale = Vector3.Lerp(button.GetChild(1).localScale, Vector3.one * 0.58f, fadeSpeed);
+                            interactableOnScreen = true;
+                            disappearTimer = disappearDelay;
+                            return;
+                        }
                     }
                 }
             }
@@ -134,11 +139,19 @@ public class Interact : MonoBehaviour
         }
 
         targetItem.GetComponent<InteractFunctions>().Interact();
+        plr.Eating();
+        StartCoroutine(DelayedResetEating());
 
         // Volta o botão visualmente
         yield return StartCoroutine(ReturnButton(buttonChild));
 
         isInteracting = false;
+    }
+
+    private IEnumerator DelayedResetEating()
+    {
+        yield return new WaitForSeconds(0.6f);
+        plr.ResetEating();
     }
 
     private IEnumerator ReturnButton(Transform buttonChild)
@@ -155,7 +168,6 @@ public class Interact : MonoBehaviour
         }
         buttonChild.localScale = originalScale;
     }
-
 
     private void OnDrawGizmosSelected()
     {

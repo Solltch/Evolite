@@ -1,22 +1,145 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class SkillMenager : MonoBehaviour
 {
-
+    public GameObject discoverScreen;
+    public GameObject herbivoreIcon;
+    public GameObject carnivoreIcon;
+    public GameObject DashIcon;
+    public GameObject BiteIcon;
+    public Sprite chifreSprite;
+    public Sprite florSprite;
     public List<Skill_Class> skills = new List<Skill_Class>();
     public Player_General plr;
+    public HabilidadeAPI habilidadeApi;
+    public CriatHabilAPI criatHabilApi;
 
     void Awake()
     {
+        herbivoreIcon.SetActive(false);
+        carnivoreIcon.SetActive(false);
+        DashIcon.SetActive(false);
+        BiteIcon.SetActive(false);
+
+        if (habilidadeApi == null)
+        {
+            habilidadeApi = FindObjectOfType<HabilidadeAPI>();
+        }
+        // Adicionar inicialização do CriatHabilAPI
+        if (criatHabilApi == null)
+        {
+            criatHabilApi = FindObjectOfType<CriatHabilAPI>();
+        }
         plr = GameObject.Find("Player Sprite").GetComponent<Player_General>();
+
+    }
+
+    void Start()
+    {
         Skill_Class[] foundSkills = FindObjectsByType<Skill_Class>(FindObjectsSortMode.None);
 
         foreach (Skill_Class s in foundSkills)
         {
             skills.Add(s);
+        }
+
+        if (habilidadeApi != null)
+        {
+            StartCoroutine(LoadSkillsFromDatabase());
+        }
+        else
+        {
+            InitializeSkillClicks();
+        }
+    }
+
+    IEnumerator LoadSkillsFromDatabase()
+    {
+        yield return habilidadeApi.List((habilidadesArray) =>
+        {
+            if (habilidadesArray == null)
+            {
+                return;
+            }
+
+            foreach (var dbHabilidade in habilidadesArray)
+            {
+                Skill_Class targetSkill = skills.FirstOrDefault(s => s.id == dbHabilidade.id);
+
+                if (targetSkill != null)
+                {
+                    targetSkill.nome = dbHabilidade.nome;
+                    targetSkill.descricao = dbHabilidade.descricao;
+                    targetSkill.custo = dbHabilidade.custo_DNA;
+                }
+            }
+            InitializeSkillClicks();
+        });
+    }
+
+    void VerifySkillRequirements(Skill_Class s)
+    {
+        if (s.requisitos == null || s.requisitos.Count == 0)
+        {
+            s.blocked = false;
+            return;
+        }
+
+        List<Skill_Class> requisitosPegos = new List<Skill_Class>();
+
+        for (int i = 0; i < s.requisitos.Count; i++)
+        {
+            if (s.requisitos[i].isTaken)
+            {
+                requisitosPegos.Add(s.requisitos[i]);
+            }
+        }
+
+        if (requisitosPegos.Count == s.requisitos.Count)
+        {
+            s.blocked = false;
+        }
+        else
+        {
+            s.blocked = true;
+        }
+    }
+
+    void UnlockDependents(Skill_Class s, Skill_Class sO)
+    {
+        if (s.requisitos == null || s.requisitos.Count == 0)
+        {
+            s.blocked = false;
+        }
+        else if (s.requisitos.Contains(sO))
+        {
+            bool all = s.requisitos.All(r => r.isTaken);
+            s.blocked = !all;
+        }
+
+        s.BlockButton();
+        s.ColorButton();
+    }
+
+    void InitializeSkillClicks()
+    {
+        foreach (Skill_Class s in skills)
+        {
             AddSkillOnClick(s);
+        }
+
+        foreach (Skill_Class s in skills)
+        {
+            VerifySkillRequirements(s);
+            s.BlockButton();
+            s.ColorButton();
         }
     }
 
@@ -26,121 +149,203 @@ public class SkillMenager : MonoBehaviour
 
         if (btn == null)
         {
-            Debug.LogWarning("Skill sem botão: " + skill.nome);
-            return;
+            btn = skill.GetComponentInChildren<Button>();
+
+            if (btn == null)
+            {
+                return;
+            }
         }
 
         btn.onClick.RemoveAllListeners();
-
         btn.onClick.AddListener(() => specificEvent(skill));
-        btn.onClick.AddListener(() => genericEvent(skill));
     }
+
 
     void specificEvent(Skill_Class s)
     {
-        if (!s.blocked)
-        {
+            if (s.blocked) return;
+            if (s.isTaken) return;
+
+            int idCriatura = plr.idCriatura;
+            int idHabilidade = s.id;
+
+            if (idCriatura <= 0)
+            {
+                string msg = "Salve sua criatura (ID) antes de comprar habilidades permanentes!";
+                Debug.LogWarning(msg);
+            }
+
+            if (plr.stats3.DNA >= s.custo)
+            {
+                plr.stats3.DNA -= s.custo;
+                s.isTaken = true;
+
+                if (criatHabilApi != null && idCriatura > 0 && idHabilidade > 0)
+                {
+
+                    StartCoroutine(criatHabilApi.Add(idCriatura, idHabilidade, (ok, res) =>
+                    {
+                        if (!ok)
+                        {
+                            string failMsg = $"Falha ao salvar no DB! Erro: {res}";
+                            Debug.LogError(failMsg);
+                        }
+                        else
+                        {
+                            string successMsg = $"Habilidade {s.nome} adquirida e salva com sucesso!";
+                             Debug.Log(successMsg);
+                        }
+                    }));
+                }
+                else if (idCriatura > 0)
+                {
+                    string apiWarning = "CriatHabilAPI não encontrado. Habilidade não salva no DB.";
+                    Debug.LogWarning(apiWarning);
+                }
+
+                VerifySkillRequirements(s);
+
+                foreach (Skill_Class sk in skills)
+                {
+                    UnlockDependents(sk, s);
+                }
+
             switch (s.id)
             {
                 case 0:
                     return;
+
                 case 1:
-                    plr.Herbiv = true;
+                    plr.skills.Herbiv = true;
+                    herbivoreIcon.SetActive(true);
                     return;
+
                 case 2:
-                    plr.Carniv = true;
+                    plr.skills.Carniv = true;
+                    carnivoreIcon.SetActive(true);
                     return;
+
                 case 3:
-                    plr.Presis = true;
+                    plr.skills.Presis = true;
                     return;
+
                 case 4:
-                    plr.Couro = true;
+                    plr.skills.Couro = true;
+                    plr.stats3.maxHealth += 50;
+                    plr.stats3.curHealth += 50;
                     return;
+
                 case 5:
-                    plr.Presas = true;
+                    plr.skills.Presas = true;
+                    BiteIcon.SetActive(true);
                     return;
+
                 case 6:
-                    plr.Olhos = true;
+                    plr.skills.Olhos = true;
                     return;
-                case 7:
-                    return;
+
                 case 8:
-                    plr.Casco = true;
+                    plr.skills.Casco = true;
                     return;
+
                 case 9:
-                    plr.Dieta = true;
+                    plr.skills.Dieta = true;
+                    plr.stats3.hungerDecaySpeed /= 2;
                     return;
+
                 case 10:
-                    plr.Garras = true;
+                    plr.skills.Garras = true;
+                    plr.stats2.baseAttackDmg += 5;
                     return;
+
                 case 11:
-                    plr.Escond = true;
+                    plr.skills.Escond = true;
                     return;
+
                 case 12:
-                    plr.PatasA = true;
+                    plr.skills.PatasA = true;
                     return;
+
                 case 13:
-                    plr.Esquiv = true;
+                    plr.skills.Esquiv = true;
                     return;
+
                 case 14:
-                    plr.Furtiv = true;
+                    plr.skills.Flor = true;
+                    discoverScreen.SetActive(true);
+                    discoverScreen.GetComponent<SpriteRenderer>().sprite = florSprite;
                     return;
+
                 case 15:
-                    plr.Ecoal = true;
+                    plr.skills.Ecoal = true;
                     return;
+
                 case 16:
-                    plr.Veneno = true;
+                    plr.skills.Veneno = true;
                     return;
+
                 case 17:
-                    plr.Espinh = true;
+                    plr.skills.Espinh = true;
                     return;
+
                 case 18:
-                    plr.Resist = true;
+                    plr.skills.Resist = true;
                     return;
+
                 case 19:
-                    plr.Carnic = true;
+                    plr.skills.Carnic = true;
                     return;
+
                 case 20:
-                    plr.Regen = true;
+                    plr.skills.Regen = true;
                     return;
+
                 case 21:
-                    plr.Abraco = true;
+                    plr.skills.Abraco = true;
                     return;
+
                 case 22:
-                    plr.Flor = true;
+                    plr.skills.Flor = true;
                     return;
+
                 case 23:
-                    plr.Chifre = true;
+                    plr.skills.Chifre = true;
                     return;
+
                 case 24:
-                    plr.Salto = true;
+                    plr.skills.Salto = true;
                     return;
+
                 case 25:
-                    plr.Invisi = true;
+                    plr.skills.Invisi = true;
                     return;
+
                 case 26:
-                    plr.Celere = true;
+                    plr.skills.Celere = true;
                     return;
+
                 case 27:
-                    plr.Gigant = true;
+                    plr.skills.Gigant = true;
                     return;
+
                 case 28:
-                    plr.Titan = true;
+                    plr.skills.Titan = true;
                     return;
+
                 case 29:
-                    plr.Coloss = true;
+                    plr.skills.Coloss = true;
                     return;
+
                 case 30:
-                    plr.Apex = true;
+                    plr.skills.Apex = true;
                     return;
-
             }
-
         }
-    }
-
-    void genericEvent(Skill_Class s)
-    {
-        Debug.Log("Melhorar skill: " + s.name);
+            else
+            {
+                string dnaMsg = $"DNA insuficiente! Custo: {s.custo}. Você tem: {plr.stats3.DNA}";
+                Debug.LogWarning(dnaMsg);
+            }
     }
 }
