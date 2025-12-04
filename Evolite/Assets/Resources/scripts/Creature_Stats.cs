@@ -13,6 +13,8 @@ public class Creature_Stats : MonoBehaviour
     public NavMeshAgent agent;
     public Creature_Attack attack;
     public Creature_General general;
+    public AudioSource source;
+    public AudioClip hit;
 
     [Header("Status")]
     public bool isRunning;
@@ -48,6 +50,8 @@ public class Creature_Stats : MonoBehaviour
 
     private void Awake()
     {
+        source = GetComponent<AudioSource>();
+
         if (agent == null)
             agent = GetComponentInParent<NavMeshAgent>();
 
@@ -61,7 +65,7 @@ public class Creature_Stats : MonoBehaviour
             sprite = transform.parent.Find("Dummy_Sprite");
 
         if (flash == null && sprite != null)
-            flash = sprite.GetComponent<Damage_Flash>();
+            flash = sprite.transform.GetChild(0).GetComponent<Damage_Flash>();
 
         if (particles == null)
             particles = GetComponentInChildren<ParticleSystem>();
@@ -132,67 +136,63 @@ public class Creature_Stats : MonoBehaviour
 
     public void ApplyPoison(float duration)
     {
-        // Se já estiver envenenado, reinicia a duração e o dano.
-        if (isPoisoned)
-        {
-            // Se já há uma rotina rodando, paramos para evitar duplicidade
-            if (poisonCoroutine != null)
-            {
-                StopCoroutine(poisonCoroutine);
-            }
-        }
-
-        isPoisoned = true;
-
-        // Define o tempo final do veneno
+        // Estende o veneno sem cancelar ticks
         poisonEndTime = Time.time + duration;
 
-        // Inicia a rotina de dano por tick
-        poisonCoroutine = StartCoroutine(PoisonDamageRoutine(duration));
+        if (!isPoisoned)
+        {
+            isPoisoned = true;
+            poisonCoroutine = StartCoroutine(PoisonDamageRoutine());
+        }
     }
 
-    // NOVO: Coroutine para aplicar dano por tick
-    private IEnumerator PoisonDamageRoutine(float duration)
-    {
-        float timer = 0f;
-        while (timer < duration)
-        {
-            // Aplica o dano do veneno (diretamente, sem chamar TakeDamage para evitar loop)
-            curHealth -= poisonTickDamage;
-            Limitador(); // Garante que a vida não exceda os limites
 
-            // Opcional: Efeito visual/sonoro de tick de dano
+    // NOVO: Coroutine para aplicar dano por tick
+    private IEnumerator PoisonDamageRoutine()
+    {
+        while (true)
+        {
+            // Se acabou o veneno, para
+            if (Time.time >= poisonEndTime)
+            {
+                isPoisoned = false;
+                poisonCoroutine = null;
+                yield break;
+            }
+
+            // Aplica o tick
+            curHealth -= poisonTickDamage;
+            Limitador();
 
             if (curHealth <= 0f)
             {
                 Die();
-                yield break; // Sai da coroutine se a criatura morrer
+                yield break;
             }
 
-            timer += poisonTickInterval;
             yield return new WaitForSeconds(poisonTickInterval);
         }
-
-        // Força a desativação se a duração terminar
-        isPoisoned = false;
     }
 
     public void TakeDamage(float damage)
     {
+        source.clip = hit;
+        source.Play();
+
         curHealth -= damage;
         Limitador();
         general.SetHumor();
 
         Debug.Log("Inimigo Apanhou");
 
-        // Mantemos a flag para o caso de outros sistemas precisarem saber
+        // Mantemos a flag justTookDamage, mas ela NÃO é usada pelo Damage_Flash do inimigo.
         justTookDamage = true;
 
-        // A chamada direta é a forma mais segura de garantir o flash:
+        // A chamada direta para INIMIGOS é a forma mais segura de garantir o flash:
         if (flash != null)
         {
-            // Se a coroutine já estiver rodando, o StartCoroutine tenta rodar uma nova,
-            // mas o Damage_Flash usa a flag 'isFlashing' para se proteger contra isso.
+            // Se a coroutine NÃO estiver rodando, StartCoroutine a inicia.
+            // Se isFlashing for true, o FlashCoroutine se protege (isFlashing = true; yield break;).
             StartCoroutine(flash.FlashCoroutine());
         }
 

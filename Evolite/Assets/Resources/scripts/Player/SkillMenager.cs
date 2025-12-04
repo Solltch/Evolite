@@ -20,6 +20,7 @@ public class SkillMenager : MonoBehaviour
     public Player_General plr;
     public HabilidadeAPI habilidadeApi;
     public CriatHabilAPI criatHabilApi;
+    public Transform healthBar;
 
     void Awake()
     {
@@ -234,6 +235,7 @@ public class SkillMenager : MonoBehaviour
                     plr.skills.Couro = true;
                     plr.stats3.maxHealth += 50;
                     plr.stats3.curHealth += 50;
+                    healthBar.localScale = new Vector3(healthBar.localScale.x * 1.5f, healthBar.localScale.y, healthBar.localScale.z);
                     return;
 
                 case 5:
@@ -242,11 +244,9 @@ public class SkillMenager : MonoBehaviour
                     return;
 
                 case 6:
-                    plr.skills.Olhos = true;
                     return;
 
                 case 8:
-                    plr.skills.Casco = true;
                     return;
 
                 case 9:
@@ -269,12 +269,10 @@ public class SkillMenager : MonoBehaviour
 
                 case 13:
                     plr.skills.Esquiv = true;
+                    DashIcon.SetActive(true);
                     return;
 
                 case 14:
-                    plr.skills.Flor = true;
-                    discoverScreen.SetActive(true);
-                    discoverScreen.GetComponent<SpriteRenderer>().sprite = florSprite;
                     return;
 
                 case 15:
@@ -307,14 +305,19 @@ public class SkillMenager : MonoBehaviour
 
                 case 22:
                     plr.skills.Flor = true;
+                    discoverScreen.SetActive(true);
+                    discoverScreen.transform.GetChild(1).GetComponent<Image>().sprite = florSprite;
                     return;
 
                 case 23:
                     plr.skills.Chifre = true;
+                    discoverScreen.SetActive(true);
+                    discoverScreen.transform.GetChild(1).GetComponent<Image>().sprite = chifreSprite;
                     return;
 
                 case 24:
                     plr.skills.Salto = true;
+                    plr.stats.dashForce += plr.stats.dashForce;
                     return;
 
                 case 25:

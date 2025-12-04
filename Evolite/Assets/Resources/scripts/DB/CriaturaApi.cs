@@ -100,33 +100,65 @@ public class CriaturaAPI : MonoBehaviour
         string url = baseUrl + "read.php";
         if (id_criador > 0) url += "?id_criador=" + id_criador;
 
+        Debug.Log($"DEBUG API-LIST: Buscando criatura para id_criador={id_criador}. URL: {url}");
+       
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             yield return www.SendWebRequest();
+
+            Debug.Log("CODE: " + www.responseCode);
+            Debug.Log("REDIRECT: " + www.GetResponseHeader("Location"));
+
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError($"Erro na requisição: {www.error ?? www.downloadHandler.text}");
                 callback(null);
                 yield break;
             }
-            string[] rows = ApiUtils.SplitLines(www.downloadHandler.text);
-            var list = new List<Criatura>();
-            foreach (var r in rows)
+
+            string jsonResponse = www.downloadHandler.text;
+            Debug.Log($"DEBUG API-LIST Resposta JSON Bruta: {jsonResponse}");
+
+            try
             {
-                if (string.IsNullOrWhiteSpace(r)) continue;
-                var cols = r.Split(';');
-                // VERIFICAÇÃO DE COLUNAS: Anteriormente era < 5, agora deve ser < 3 (id, id_criador, nome)
-                if (cols.Length < 3) continue;
-                var c = new Criatura
+                // A classe JsonHelper é necessária para parsear um array JSON (o PHP retorna um array [...] )
+                // Se você não a tiver, adicione-a (veja o próximo passo).
+                Criatura[] list = JsonHelper.FromJsonArray<Criatura>(jsonResponse);
+
+                if (list != null)
                 {
-                    id = int.Parse(cols[0]),
-                    id_criador = int.Parse(cols[1]),
-                    nome = cols[2],
-                    // REMOVIDAS: level e tipo
-                };
-                list.Add(c);
+                    Debug.Log($"DEBUG API-LIST: {list.Length} criaturas encontradas.");
+                }
+
+                callback(list);
             }
-            callback(list.ToArray());
+            catch (Exception ex)
+            {
+                Debug.LogError($"Erro de parse JSON na List: {ex.Message}\nJSON: {jsonResponse}");
+                callback(null);
+            }
+        }
+    }
+
+    private class CriaturaListWrapper
+    {
+    }
+
+    public static class JsonHelper
+    {
+        [System.Serializable]
+        private class Wrapper<T>
+        {
+            public T[] items;
+        }
+
+        public static T[] FromJsonArray<T>(string json)
+        {
+            string newJson = "{\"items\":" + json + "}";
+
+            Wrapper<T> wrapper = JsonUtility.FromJson<Wrapper<T>>(newJson);
+
+            return wrapper.items;
         }
     }
 

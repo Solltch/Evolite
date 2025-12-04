@@ -45,6 +45,12 @@ public class MenuFunctions : MonoBehaviour
     public Color pickedColor;
     public Button autoclick;
 
+    public GameObject saveButtonContainer;
+    private const string SAVE_BUTTON_PREFAB_PATH = "prefab/Menus/SaveButton";
+    private GameObject saveButtonPrefab;
+    public GameObject savesMenu;
+    private Criatura[] savedCreatures;
+
     public void Start()
     {
         if (usuarioApi == null) usuarioApi = FindObjectOfType<UsuarioAPI>();
@@ -55,15 +61,28 @@ public class MenuFunctions : MonoBehaviour
             SMpos = skillTree.GetComponent<RectTransform>().anchoredPosition;
         if(customMenu != null )
             CMpos = customMenu.GetComponent<RectTransform>().anchoredPosition;
-        isAbleToPause = true;
-        pauseMenu.SetActive(false);
-        skillTree.SetActive(false);
+
+        saveButtonPrefab = Resources.Load<GameObject>(SAVE_BUTTON_PREFAB_PATH);
+        if (saveButtonPrefab == null)
+        {
+            Debug.LogError($"Erro ao carregar o prefab: {SAVE_BUTTON_PREFAB_PATH}. Verifique o caminho!");
+        }
 
         if (isIngame)
         {
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
             loggedUser = SessionManager.Instance.CurrentUser;
+            isAbleToPause = true;
+            Time.timeScale = 0f;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            pauseMenu.SetActive(false);
+            skillTree.SetActive(false);
+            if (SessionManager.Instance.CurrentCreature.id != 0)
+            {
+                LoadCreature(SessionManager.Instance.CurrentCreature.id);
+                playerGeneral.idCriatura = SessionManager.Instance.CurrentCreature.id;
+            }
+            
         }
         else
         {
@@ -74,23 +93,26 @@ public class MenuFunctions : MonoBehaviour
 
     public void Update()
     {
-        if (Input.GetKeyDown(pauseButton))
+        if (isIngame)
         {
-            if (isAbleToPause)
+            if (Input.GetKeyDown(pauseButton))
             {
-                if (!isPaused) PauseGame();
-                else ResumeGame();
+                if (isAbleToPause)
+                {
+                    if (!isPaused) PauseGame();
+                    else ResumeGame();
+                }
             }
-        }
 
-        if (Input.GetKeyDown(skillTreeButton))
-        {
-            if (!isInSkillTree) OpenTree();
-            else CloseTree();
+            if (Input.GetKeyDown(skillTreeButton))
+            {
+                if (!isInSkillTree) OpenTree();
+                else CloseTree();
+            }
         }
     }
 
-    private void OpenTree()
+    public void OpenTree()
     {
         skillTree.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
         skillTree.SetActive(true);
@@ -100,7 +122,7 @@ public class MenuFunctions : MonoBehaviour
         Cursor.visible = true;
     }
 
-    private void CloseTree()
+    public void CloseTree()
     {
         skillTree.GetComponent<RectTransform>().anchoredPosition = SMpos;
         skillTree.SetActive(false);
@@ -154,6 +176,205 @@ public class MenuFunctions : MonoBehaviour
         }
     }
 
+    public void OpenSavesMenu()
+    {
+        if (!SessionManager.Instance.IsLoggedIn || loggedUser == null)
+        {
+            Debug.Log("É preciso estar logado para ver os salvamentos!");
+            return;
+        }
+
+        if (savesMenu == null || saveButtonContainer == null)
+        {
+            Debug.Log("Erro: Componentes do Menu de Salvamento não configurados!");
+            return;
+        }
+
+        savesMenu.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        // Inicia a busca pelas criaturas
+        StartCoroutine(LoadCreaturesRoutine(loggedUser.id));
+    }
+
+    private IEnumerator LoadCreaturesRoutine(int creatorId)
+    {
+        Debug.Log("Buscando criaturas salvas...");
+
+        Criatura[] list = null;
+        // Chama a função List do CriaturaAPI
+        yield return criaturaApi.List(creatorId, (arr) => list = arr);
+
+        savedCreatures = list;
+
+        if (savedCreatures == null || savedCreatures.Length == 0)
+        {
+            Debug.Log("Nenhuma criatura salva encontrada para este usuário.");
+            yield break;
+        }
+
+        SetConsoleMessage($"Criaturas encontradas: {savedCreatures.Length}. Criando botões...", false);
+        CreateSaveButtons(savedCreatures);
+    }
+
+    private void CreateSaveButtons(Criatura[] creatures)
+    {
+        if (saveButtonPrefab == null)
+        {
+            Debug.Log("Erro: Prefab do botão de salvamento não carregado!");
+            return;
+        }
+
+        foreach (var creature in creatures)
+        {
+            // 1. Instancia o botão
+            GameObject buttonObj = Instantiate(saveButtonPrefab, saveButtonContainer.transform);
+
+            // 2. Tenta pegar o componente Button e o Text (assumindo que o texto é um filho)
+            Button button = buttonObj.GetComponent<Button>();
+            TextMeshProUGUI buttonText = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
+
+            if (buttonText != null)
+            {
+                // 3. Define o nome da criatura no texto do botão
+                buttonText.text = creature.nome;
+            }
+            else
+            {
+                Debug.LogWarning($"Button Text (TextMeshProUGUI) não encontrado no filho do prefab {SAVE_BUTTON_PREFAB_PATH}.");
+            }
+
+            if (button != null)
+            {
+                // 4. Configura a ação do botão (Carregar Criatura)
+                // Usamos uma expressão lambda para capturar o ID da criatura (closure)
+                button.onClick.AddListener(() => StartGame(creature.id));
+            }
+        }
+        this.gameObject.SetActive(false);
+    }
+
+    private void StartGame(int creatureId)
+    {
+        SessionManager.Instance.CurrentCreature.id = creatureId;
+        SetConsoleMessage($"Tentando carregar a criatura com ID: {creatureId}", false);
+        PlayGame();
+    }
+
+    public void LoadCreature(int creatureId)
+    {
+        Debug.Log($"Tentando carregar a criatura com ID: {creatureId}");
+
+        // Garante que o Player_General está disponível
+        if (playerGeneral == null) playerGeneral = FindObjectOfType<Player_General>();
+
+        if (playerGeneral == null)
+        {
+            Debug.Log("Erro: Componente Player_General não encontrado.");
+            return;
+        }
+
+        // Inicia a rotina de carregamento
+        StartCoroutine(LoadCreatureRoutine(creatureId));
+    }
+
+    private IEnumerator LoadCreatureRoutine(int creatureId)
+    {
+        Debug.Log($"Buscando dados da criatura e partes para o ID: {creatureId}...");
+
+        List<CriaturaParte> partes = null;
+        string error = null;
+
+        // NOVO PASSO 1: Busca os dados da criatura principal (onde o nome está)
+        yield return criaturaApi.Get(creatureId, (c, err) =>
+        {
+            criaturaAtual = c;
+            error = err;
+        });
+
+        if (error != null)
+        {
+            Debug.Log($"Falha ao carregar dados da criatura: {error}");
+            yield break;
+        }
+
+        if (criaturaAtual == null)
+        {
+            Debug.Log("Criatura principal não encontrada.");
+            yield break;
+        }
+
+        // NOVO PASSO 2: Salva o ID e o NOME no SessionManager
+        if (SessionManager.Instance.CurrentCreature != null)
+        {
+            SessionManager.Instance.CurrentCreature.id = criaturaAtual.id;
+            SessionManager.Instance.CurrentCreature.nome = criaturaAtual.nome;
+            Debug.Log($"Dados da criatura carregados: ID={criaturaAtual.id}, Nome='{criaturaAtual.nome}'");
+        }
+
+        // 1. Chama a API para obter as partes
+        yield return criatParteApi.GetByCriatura(creatureId, (list, err) =>
+        {
+            partes = list;
+            error = err;
+        });
+
+        if (error != null)
+        {
+            Debug.Log($"Falha ao carregar partes: {error}");
+            // Se houver falha, não continua, mas também não chama PlayGame()
+            yield break;
+        }
+
+        if (partes == null || partes.Count == 0)
+        {
+            Debug.Log("Nenhuma parte encontrada para esta criatura. Iniciando com padrão.");
+        }
+        else
+        {
+            Debug.Log($"Partes carregadas: {partes.Count}. Aplicando ao jogador...");
+            ApplyCreatureParts(partes);
+            Debug.Log("Partes aplicadas com sucesso!");
+        }
+    }
+
+    private void ApplyCreatureParts(List<CriaturaParte> partes)
+    {
+        if (playerGeneral == null) return;
+
+        foreach (var parte in partes)
+        {
+            switch (parte.tipo_parte)
+            {
+                case 0:
+                    playerGeneral.headIndex = parte.id_parte;
+                    break;
+                case 1: // Head
+                    playerGeneral.eyeIndex = parte.id_parte;
+                    break;
+                case 2: // Eye
+                    playerGeneral.pupilIndex = parte.id_parte;
+                    break;
+                case 3: // Pupil
+                    playerGeneral.FaceIndex = parte.id_parte;
+                    break;
+                case 4: // Face (Skin/Body)
+                    playerGeneral.headAcessoriesIndex = parte.id_parte;
+                    break;
+                case 5: // Head Accessory
+                    playerGeneral.bodyAcessoriesIndex = parte.id_parte;
+                    break;
+                default:
+                    Debug.LogWarning($"Tipo de parte desconhecido: {parte.tipo_parte}. Ignorando.");
+                    break;
+            }
+        }
+
+        // Você pode precisar de uma chamada para atualizar visualmente a criatura 
+        // após definir todos os IDs (ex: playerGeneral.UpdateAppearance()).
+    }
+
     public void CadastrarUsuario()
     {
         Debug.Log("Parte1");
@@ -179,11 +400,11 @@ public class MenuFunctions : MonoBehaviour
 
         StartCoroutine(usuarioApi.Login(user, (ok, res) =>
         {
-            Debug.Log("RESPOSTA DO SERVIDOR" + res); 
+            Debug.Log("RESPOSTA DO SERVIDOR: " + res); // Log para ver a resposta
 
             if (!ok)
             {
-                console.text = "Falha de conexão:\n" + res;
+                SetConsoleMessage("Falha de conexão:\n" + res, true);
                 return;
             }
 
@@ -191,29 +412,39 @@ public class MenuFunctions : MonoBehaviour
 
             if (dados.Length == 0)
             {
-                console.text = "Resposta inválida do servidor.";
+                SetConsoleMessage("Resposta inválida do servidor.", true);
                 return;
             }
 
             if (dados[0] == "ERRO")
             {
-                console.text = "Login falhou:\n" + (dados.Length > 1 ? dados[1] : "Motivo desconhecido");
+                SetConsoleMessage("Login falhou:\n" + (dados.Length > 1 ? dados[1] : "Motivo desconhecido"), true);
                 return;
             }
 
             if (dados[0] == "OK" && dados.Length >= 3)
             {
-                console.text = "Login bem sucedido!";
+                SetConsoleMessage("Login bem sucedido!", false);
 
+                // 1. Preenche o objeto 'user' com os dados do servidor
                 user.id = int.Parse(dados[1]);
                 user.username = dados[2];
 
-                SessionManager.Instance.SetCurrentUser(user);
-                PlayGame();
+                loggedUser = user;
+
+                // 2. ATRIBUI AO SESSION MANAGER (O ÚNICO LUGAR DE VERDADE)
+                SessionManager.Instance.SetCurrentUser(loggedUser);
+
+                // 3. ATUALIZA A VARIÁVEL LOCAL 'loggedUser' (IMPORTANTE!)
+                // Use a referência do Session Manager para garantir que é o mesmo objeto.
+                loggedUser = SessionManager.Instance.CurrentUser;
+
+                OpenSavesMenu();
+
                 return;
             }
 
-            console.text = "Resposta não reconhecida:\n" + res;
+            SetConsoleMessage("Resposta não reconhecida:\n" + res, true);
         }));
     }
 
@@ -298,10 +529,10 @@ public class MenuFunctions : MonoBehaviour
         Debug.Log("Parte7: Checando existência.");
 
         // --- Lógica de Criação ou Busca da Criatura (MANTIDA) ---
-        if (criatura.id > 0)
+        if (criatura.id != 0)
         {
             yield return criaturaApi.Get(criatura.id, (c, err) => { criaturaExistente = c; error = err; });
-            if (error != null) { SetConsoleMessage("Erro ao localizar criatura!", true); yield break; }
+            if (error != null) { Debug.Log("Erro ao localizar criatura!"); yield break; }
             Debug.Log("Parte8.1: Criatura existente localizada.");
         }
         else
@@ -343,6 +574,10 @@ public class MenuFunctions : MonoBehaviour
             SetConsoleMessage($"Criatura criada! ID = {criatura.id}", false);
             Debug.Log("Parte10.2: Criatura criada.");
         }
+
+        SessionManager.Instance.CurrentCreature.id = criatura.id;
+        SessionManager.Instance.CurrentCreature.nome = criatura.nome;
+        
         // ---------------------------------------------
 
         if (criatura.id <= 0)
@@ -382,24 +617,29 @@ public class MenuFunctions : MonoBehaviour
 
         SetConsoleMessage("Salvando 6 partes da criatura...", false);
 
-        Debug.Log("Parte12: Chamando AddPartes uma única vez.");
+        Debug.Log("Parte12: Chamando SaveAll para substituir/atualizar todas as partes.");
 
-        // 3. Chama a API UMA ÚNICA VEZ com todas as listas
-        yield return criatParteApi.AddPartes(criatura.id, idsParaSalvar, tiposParaSalvar, equipadasParaSalvar, (res) =>
+        yield return criatParteApi.SaveAll(criatura.id, idsParaSalvar, tiposParaSalvar, (success, res) =>
         {
+            Debug.LogError("RESPOSTA CRUA DO PHP: " + res);
 
-            bool salvou = res.ToLower().Contains("salvas");
-
-            bool sucessoCompleto = salvou && res.ToLower().Contains("0 falhas");
-
-            if (sucessoCompleto)
+            if (success)
             {
-                SetConsoleMessage("Salvamento de Partes: Sucesso total! ", false);
+                // O servidor respondeu com sucesso HTTP. Verifica o resultado lógico.
+                if (res.ToLower().Contains("salvas"))
+                {
+                    SetConsoleMessage("Salvamento de Partes: Sucesso total! " + res, false);
+                }
+                else
+                {
+                    // Pode ser um erro de validação do PHP
+                    SetConsoleMessage("Falha/Aviso ao salvar partes: " + res, true);
+                }
             }
             else
             {
-                // Trata qualquer outra resposta como aviso/falha
-                SetConsoleMessage("Falha/Aviso ao salvar partes. Verifique a resposta do servidor: " + res, true);
+                // Falha na requisição HTTP (conexão, timeout, etc.)
+                SetConsoleMessage("Erro de conexão ao salvar partes: " + res, true);
             }
         });
 

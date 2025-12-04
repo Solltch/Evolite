@@ -24,6 +24,7 @@ public class Creature_Attack : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Awake()
     {
+        plrMovement = FindObjectOfType<Player_Movement>();
         attackCollider = GetComponent<CapsuleCollider>();
         race = GetComponentInParent<Creature_General>();
         attackCollider.enabled = true;
@@ -98,7 +99,7 @@ public class Creature_Attack : MonoBehaviour
 
     public void ResetAttack()
     {
-
+        isAttacking = false;
         ReadyToAttack = true;
     }
 }

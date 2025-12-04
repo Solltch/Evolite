@@ -22,6 +22,7 @@ public class PlayerSetPart : MonoBehaviour
 
     private void Awake()
     {
+        plr = FindObjectOfType<Player_General>();
         btn = GetComponent<Button>();
     }
 

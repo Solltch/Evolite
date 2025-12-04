@@ -168,7 +168,7 @@ public class InteractFunctions : MonoBehaviour
         cameraDamping.TrackerSettings.PositionDamping = Vector3.zero;
         cameraRotate.Damping = Vector3.zero;
         cameraDamping.TargetOffset = new Vector3(0.75f, 0.4f, 0);
-        cameraRotate.TargetOffset = new Vector3(0.75f, 0.4f, 0);
+        cameraRotate.TargetOffset = new Vector3(0.75f, 0.3f, 0);
 
         pMove.isAbleToMove = false;
         GM.isAbleToPause = false;

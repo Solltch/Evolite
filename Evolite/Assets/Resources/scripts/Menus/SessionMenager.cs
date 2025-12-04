@@ -5,6 +5,7 @@ public class SessionManager : MonoBehaviour
     public static SessionManager Instance { get; private set; }
     public bool IsLoggedIn => CurrentUser.id != -1;
     public Usuario CurrentUser;
+    public Criatura CurrentCreature;
 
     void Awake()
     {

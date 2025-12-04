@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 public class Creature_General : MonoBehaviour
 {
@@ -10,6 +12,8 @@ public class Creature_General : MonoBehaviour
     public State generalHumor = State.neutral;
     public State playerHumor;
     public enum State { friendly, neutral, scared, angry }
+    [SerializeField] private float lastTimePlayerSeen = 0f;
+    [SerializeField] private const float neutralReturnTime = 10f; // 10 segundos
 
     [Header("Componentes")]
     public Transform player;
@@ -23,6 +27,7 @@ public class Creature_General : MonoBehaviour
     public float walkingMoveSpeed = 2f;
     public float runningMoveSpeed = 5f;
     public float acceleration = 8f;
+    public float stunTime;
 
     public MovementState moveState;
     public enum MovementState { walking, running }
@@ -42,10 +47,10 @@ public class Creature_General : MonoBehaviour
     public bool playerInSightRange, playerInAttackRange;
 
     [Header("Comparadores")]
-    private bool isWalkingDelayed;
-    public bool isAttacking;
+    public bool isWalkingDelayed;
     public float hpInFrame;
     public bool isFleeing;
+    public bool isStunned;
 
     [Header("Animação")]
     public float lastMoveX;
@@ -58,18 +63,15 @@ public class Creature_General : MonoBehaviour
 
     public int bodyAcessoriesIndex;
     public int headIndex;
-    public int headAcessoriesIndex;
     public int FaceIndex;
     public int eyeIndex;
     public int pupilIndex;
 
     public float headSize;
-    public float headAcessSize;
     public float eyeSize;
     public float pawSize;
 
     public Transform head;
-    public Transform headAcess;
     public Transform paw1;
     public Transform paw2;
     public Transform leg1;
@@ -82,11 +84,14 @@ public class Creature_General : MonoBehaviour
     private Vector3 eye2Pos;
     private Vector3 pulPos;
 
-    // Campos estáticos de cache foram removidos.
-    // private static Dictionary<int, int> raceCustomizationSeed = new Dictionary<int, int>();
-    // private static Dictionary<int, Color> raceColor = new Dictionary<int, Color>();
-    // private static Dictionary<int, Material> raceMaterial = new Dictionary<int, Material>();
-    public Material baseRaceMaterial;
+    public Creature_Race race;
+
+    public List<SpriteRenderer> creatureSkin1 = new List<SpriteRenderer>();
+    public List<SpriteRenderer> creatureSkin2 = new List<SpriteRenderer>();
+    public List<SpriteRenderer> creatureSkin3 = new List<SpriteRenderer>();
+    public List<SpriteRenderer  > creatureSkin4 = new List<SpriteRenderer>();
+    public List<SpriteRenderer> creatureEye = new List<SpriteRenderer>();
+    public List<SpriteRenderer> creaturePupil = new List<SpriteRenderer>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
@@ -105,7 +110,6 @@ public class Creature_General : MonoBehaviour
         stats = GetComponentInChildren<Creature_Stats>();
         attack = GetComponentInChildren<Creature_Attack>();
         cam = GameObject.Find("Main Camera").GetComponent<Transform>();
-        isWalkingDelayed = false;
         if (SceneManager.GetActiveScene().buildIndex == 2)
         {
             Transform nest = transform.parent.Find("Centro").GetComponent<Transform>();
@@ -119,6 +123,10 @@ public class Creature_General : MonoBehaviour
         agent.acceleration = acceleration;
         SetCourage();
 
+        
+
+        agent.updateRotation = false;
+
         if (stats.courage > 1.5f)
             generalHumor = State.angry;
 
@@ -126,9 +134,6 @@ public class Creature_General : MonoBehaviour
 
         hpInFrame = stats.curHealth;
 
-        ApplyRaceSpecifics(); // Agora esta função fará apenas a customização
-        SetupParts();
-        ApplyRandomCustomization();
     }
 
     private void OnEnable()
@@ -155,25 +160,82 @@ public class Creature_General : MonoBehaviour
             playerInSightRange = CanSeePlayer();
             playerInAttackRange = Physics.CheckSphere(transform.position, attack.attackRange - .1f, WIPlayer);
 
-            UpdateRunState();
-
+            // --- LÓGICA DE DETECÇÃO/CONTADOR DE TEMPO ---
             if (playerInSightRange)
             {
-                if (playerHumor == State.scared)
-                    Fuga();
-                else if (playerHumor == State.angry)
+                Debug.Log("Tempo sem ver o plr atualizado");
+                lastTimePlayerSeen = Time.time; // Atualiza o tempo em que o player foi visto
+            }
+            // Verifica se o player não está à vista E se já passou o tempo limite E o humor não é o original
+            else if (!playerInSightRange && playerHumor != generalHumor && Time.time >= lastTimePlayerSeen + neutralReturnTime)
+            {
+                // Volta ao humor base (neutral)
+                Debug.Log("Estado resetado");
+                playerHumor = generalHumor;
+                isFleeing = false;
+                walkPointSet = false; // Força a criatura a procurar um novo ponto de patrulha
+                if (agent.isActiveAndEnabled && agent.isStopped)
                 {
+                    agent.isStopped = false; // Garante que o agente possa retomar a Patrulha
+                }
+                // Não precisa chamar Patrulha() aqui, o fluxo da Tick() fará isso abaixo.
+            }
+            // ---------------------------------------------
+
+            UpdateRunState();
+
+            if (isStunned)
+            {
+                if (agent.isActiveAndEnabled && !agent.isStopped)
+                {
+                    agent.isStopped = true;
+                }
+                animator.SetBool("Stunned", true);
+            }
+            else // Se não estiver atordoado, executa a lógica normal de IA
+            {
+                animator.SetBool("Stunned", false);
+
+                if (playerInSightRange)
+                {
+                    if (playerHumor == State.scared)
+                    {
+                        // Se não estiver ATORDOADO,
+                        if (!isStunned)
+                        {
+                            // Se a criatura ainda NÃO estiver FUGINDO (primeira vez), inicie o STUN.
+                            if (!isFleeing)
+                            {
+                                StartCoroutine(StunBeforeFleeCoroutine());
+                            }
+                            // Se a criatura já NÃO estiver atordoada e JÁ ESTIVER fugindo (Fuga() foi chamada),
+                            // reajusta o destino de fuga.
+                            else
+                            {
+                                Fuga();
+                            }
+                        }
+                    }
+                    else if (playerHumor == State.angry)
+                    {
+                        isFleeing = false;
+                        if (playerInAttackRange)
+                            Attack();
+                        else
+                            Perseguir();
+                    }
+                }
+                else
+                {
+                    // Se o player saiu da vista OU o humor voltou para neutral/friendly
                     isFleeing = false;
-                    if (playerInAttackRange)
-                        Attack();
-                    else
-                        Perseguir();
+                    Patrulha();
                 }
             }
-            else
+
+            if (!isStunned)
             {
-                isFleeing = false;
-                Patrulha();
+                RotateAgent();
             }
 
             RotateAgent();
@@ -188,13 +250,13 @@ public class Creature_General : MonoBehaviour
         animator.SetFloat("Vertical", lastMoveZ);
         animator.SetBool("Moving", agent.velocity.magnitude > 0.1f);
         animator.SetBool("Running", stats.isRunning);
+        animator.SetBool("Attacking", attack.isAttacking);
 
         UpdateLastMove();
         UpdateEyesAndHeadAcess();
         ChangePart();
         Resize();
         FlipSprite();
-        // REMOVIDO: UpdateRunState() chamada duplicada
     }
 
     private void UpdateRunState()
@@ -219,14 +281,14 @@ public class Creature_General : MonoBehaviour
 
     private void Patrulha()
     {
-        if (isFleeing) return;
+        if (isFleeing || isStunned) return;
 
         agent.stoppingDistance = 0;
 
-        if (!walkPointSet)
-        {
-            NewWalkPoint();
-        }
+        if (!walkPointSet && !isWalkingDelayed) // Só tenta novo WP se não tiver um e não estiver em atraso
+        {
+            StartCoroutine(PatrolDelay());
+        }
 
         if (walkPointSet)
         {
@@ -236,16 +298,64 @@ public class Creature_General : MonoBehaviour
                 agent.SetDestination(walkPoint);
             }
 
-            if (!agent.pathPending && agent.remainingDistance < 0.5f)
+            // Aumentei para 1.0f para dar mais margem de erro
+            if (!agent.pathPending && agent.remainingDistance < 1.0f)
             {
                 walkPointSet = false;
-            }
+                // Não precisa de atraso aqui, o isWalkingDelayed inicia o próximo.
+            }
         }
+    }
+
+    private IEnumerator PatrolDelay()
+    {
+        isWalkingDelayed = true;
+
+        // Para o agente no local por um pequeno período antes de procurar o próximo WP
+        if (agent.isActiveAndEnabled)
+        {
+            agent.isStopped = true;
+        }
+
+        yield return new WaitForSeconds(0.8f); // Tempo de "parada" antes de escolher o novo ponto
+
+        NewWalkPoint();
+
+        if (agent.isActiveAndEnabled)
+        {
+            agent.isStopped = false; // Retoma o movimento se o NewWalkPoint for bem-sucedido
+        }
+
+        isWalkingDelayed = false;
+    }
+
+    private IEnumerator StunBeforeFleeCoroutine()
+    {
+        isStunned = true;
+
+        if (agent.isActiveAndEnabled)
+        {
+            agent.isStopped = true;
+        }
+
+        if (animator != null)
+        {
+            animator.SetTrigger("DoStun");
+        }
+
+        // 2. Espera (stunTime)
+        yield return new WaitForSeconds(stunTime);
+
+        isStunned = false;
+
+
+        Fuga();
     }
 
     private void Fuga()
     {
         isFleeing = true;
+        animator.SetBool("Stunned", false);
 
         agent.stoppingDistance = 0;
 
@@ -271,22 +381,12 @@ public class Creature_General : MonoBehaviour
     }
 
 
-    private IEnumerator SetDestinoDelay(Vector3 destino, float delay)
-    {
-        isWalkingDelayed = true;
-        yield return new WaitForSeconds(delay);
-
-        if (agent != null && agent.isActiveAndEnabled)
-            agent.SetDestination(destino);
-        isWalkingDelayed = false;
-    }
-
     private void NewWalkPoint()
     {
         Vector3 randomXZ = new Vector3(
-            Random.Range(-walkPointRange, walkPointRange),
+            UnityEngine.Random.Range(-walkPointRange, walkPointRange),
             0,
-            Random.Range(-walkPointRange, walkPointRange));
+            UnityEngine.Random.Range(-walkPointRange, walkPointRange));
 
         Vector3 candidate = transform.position + randomXZ;
 
@@ -357,11 +457,14 @@ public class Creature_General : MonoBehaviour
 
     private void Attack()
     {
+        Debug.Log("Inimigo Atacando");
         agent.stoppingDistance = .6f;
         attack.BaseAttack();
 
         Vector3 direction = player.position - transform.position;
+
         Quaternion lookRotation = Quaternion.LookRotation(direction);
+
         transform.rotation = lookRotation;
 
     }
@@ -387,9 +490,18 @@ public class Creature_General : MonoBehaviour
     {
         if (agent.velocity.sqrMagnitude > 0.1f) // só rotaciona se estiver se movendo
         {
+            // 1. Obtém a direção de movimento
             Vector3 direction = agent.velocity.normalized;
+
+            // 2. Cria a rotação que aponta para essa direção
             Quaternion lookRotation = Quaternion.LookRotation(direction);
-            transform.rotation = lookRotation;
+
+            // 3. Obtém o ângulo Y (yaw) da rotação calculada
+            float yAngle = lookRotation.eulerAngles.y;
+
+            // 4. Cria um novo Quaternion com apenas a rotação Y
+            // Mantém X e Z em 0 (sem inclinação/roll ou pitch)
+            transform.rotation = Quaternion.Euler(0f, yAngle, 0f);
         }
     }
 
@@ -399,13 +511,13 @@ public class Creature_General : MonoBehaviour
         switch (stats.type)
         {
             case Creature_Stats.State.carni:
-                stats.courage = Random.Range(0.5f, 2f);
+                stats.courage = UnityEngine.Random.Range(0.5f, 2f);
                 break;
             case Creature_Stats.State.herbi:
-                stats.courage = Random.Range(0f, 1.5f);
+                stats.courage = UnityEngine.Random.Range(0f, 1.5f);
                 break;
             case Creature_Stats.State.oni:
-                stats.courage = Random.Range(0f, 2f);
+                stats.courage = UnityEngine.Random.Range(0f, 2f);
                 break;
             default:
                 stats.courage = 1f;
@@ -427,9 +539,7 @@ public class Creature_General : MonoBehaviour
 
     private void UpdateLastMove()
     {
-        if (agent.velocity.sqrMagnitude > 0.01f) // movendo
-        {
-            Vector3 vel = agent.velocity.normalized;
+        Vector3 vel = agent.transform.forward;
 
             Vector3 camForward = cam.forward;
             camForward.y = 0;
@@ -455,8 +565,6 @@ public class Creature_General : MonoBehaviour
 
             lastMoveZ = z;
             lastMoveX = x;
-        }
-        // parado = não altera lastMove
     }
 
 
@@ -473,28 +581,36 @@ public class Creature_General : MonoBehaviour
     private void Start()
     {
         SetupParts();
-        ApplyRandomCustomization(); //criatura gera tudo automaticamente
+        ApplyRandomCustomization();
     }
 
     void SetupParts()
     {
         head = FindDeepChild(transform, "Cabeça");
-        headAcess = FindDeepChild(transform, "Head Acessory");
         paw1 = FindDeepChild(transform, "Mão Direita");
         paw2 = FindDeepChild(transform, "Mão Esquerda");
         leg1 = FindDeepChild(transform, "Pé Direito");
         leg2 = FindDeepChild(transform, "Pé Esquerdo");
         eye1 = FindDeepChild(transform, "Olho");
 
-        headAcessOrigin = headAcess.localPosition;
+        ChangePart();
 
-        eye2 = Instantiate(eye1, eye1.parent);
-        eye2.localScale = new Vector3(eye1.localScale.x, -eye1.localScale.y, eye1.localScale.z);
-        eye2.localPosition = new Vector3(eye1.localPosition.x, -eye1.localPosition.y, eye1.localPosition.z);
 
-        eyePart = eye2.Find("Eye").GetComponent<CustomPart>();
-        pupilPart = eye2.Find("Pupil").GetComponent<CustomPart>();
-        pupilPart.transform.localScale = new Vector3(1, -1, 1);
+        if (eye2 == null)
+        {
+            eye2 = Instantiate(eye1, eye1.parent);
+            eye2.localScale = new Vector3(eye1.localScale.x, -eye1.localScale.y, eye1.localScale.z);
+            eye2.localPosition = new Vector3(eye1.localPosition.x, -eye1.localPosition.y, eye1.localPosition.z);
+
+
+            CustomPart eye2_Part = eye2.Find("Eye").GetComponent<CustomPart>();
+            CustomPart pupil2_Part = eye2.Find("Pupil").GetComponent<CustomPart>();
+            pupil2_Part.transform.localScale = new Vector3(1, -1, 1);
+            eyePart = eye2.Find("Eye").GetComponent<CustomPart>();
+            pupilPart = eye2.Find("Pupil").GetComponent<CustomPart>();
+
+            pupilPart.transform.localScale = new Vector3(1, -1, 1);
+        }
 
         eyePos = eyePart.transform.localPosition;
         pulPos = pupilPart.transform.localPosition;
@@ -503,47 +619,75 @@ public class Creature_General : MonoBehaviour
 
     public void ApplyRandomCustomization()
     {
+        race = transform.parent.GetComponent<Creature_Race>();
+
         // Estes valores são gerados de forma 100% aleatória em tempo de execução
-        bodyAcessoriesIndex = Random.Range(-1, 4);
-        headIndex = Random.Range(0, 4);
+        bodyAcessoriesIndex = race.bodyAcessoriesIndex;
+        headIndex = race.headIndex;
+        FaceIndex = race.FaceIndex;
+        eyeIndex = race.eyeIndex;
+        pupilIndex = race.pupilIndex;
 
-        // Se headIndex NÃO FOR 0 headAcessoriesIndex vira -1
-        if (headIndex != 0)
-            headAcessoriesIndex = -1;
-        else
-            headAcessoriesIndex = Random.Range(-1, 2);
-        FaceIndex = Random.Range(-1, 9);
-        eyeIndex = Random.Range(-1, 19);
-        pupilIndex = Random.Range(-1, 12);
+        headSize = race.headSize;
+        eyeSize = race.eyeSize;
+        pawSize = race.pawSize;
 
-        headSize = Random.Range(0.6f, 1.4f);
-        headAcessSize = Random.Range(0.6f, 1.4f);
-        eyeSize = Random.Range(0.6f, 1.4f);
-        pawSize = Random.Range(0.7f, 1.3f);
+        foreach (var spriterender in creatureSkin1)
+        {
+            spriterender.material = race.creatureSkin1;
+        }
+        foreach (var spriterender in creatureSkin2)
+        {
+            spriterender.material = race.creatureSkin2;
+        }
+        foreach (var spriterender in creatureSkin3)
+        {
+            spriterender.material = race.creatureSkin3;
+        }
+        foreach (var spriterender in creatureSkin4)
+        {
+            spriterender.material = race.creatureSkin4;
+        }
+        foreach (var spriterender in creatureEye)
+        {
+            spriterender.material = race.creatureEye;
+        }
+        foreach (var spriterender in creaturePupil)
+        {
+            spriterender.material = race.creaturePupil;
+        }
 
         Resize();
         ChangePart();
     }
 
-    void ChangePart()
+    public void ChangePart()
     {
-        if (parts.Count >= 6)
+        int moveZ = Convert.ToInt32(lastMoveZ);
+
+        parts[0].SetSprite(bodyAcessoriesIndex, moveZ); // Body Acessory
+        parts[1].SetSprite(headIndex, moveZ);            // Head
+
+        // --- EYE 1 ---
+        parts[2].SetSprite(eyeIndex, moveZ);            // Eye 1 Sprite
+        parts[3].SetSprite(pupilIndex, moveZ);           // Pupil 1 Sprite
+
+        // --- EYE 2 (Clone) ---
+        // Usamos as referências que foram ligadas ao EYE2 no Awake.
+        if (eyePart != null)
         {
-            parts[0].SetSprite(bodyAcessoriesIndex, (int)lastMoveZ);
-            parts[1].SetSprite(headIndex, (int)lastMoveZ);
-            parts[2].SetSprite(eyeIndex, (int)lastMoveZ);
-            eyePart.SetSprite(eyeIndex, (int)lastMoveZ);
-            parts[3].SetSprite(pupilIndex, (int)lastMoveZ);
-            pupilPart.SetSprite(pupilIndex, (int)lastMoveZ);
-            parts[4].SetSprite(headAcessoriesIndex, (int)lastMoveZ);
-            parts[5].SetSprite(FaceIndex, (int)lastMoveZ);
-        }
-    }
+            eyePart.SetSprite(eyeIndex, moveZ);          // Eye 2 Sprite (IDêntico ao Eye 1)
+        }
+        if (pupilPart != null)
+        {
+            pupilPart.SetSprite(pupilIndex, moveZ);       // Pupil 2 Sprite (IDêntico ao Pupil 1)
+        }
+        parts[5].SetSprite(FaceIndex, moveZ);            // Face
+    }
 
     void Resize()
     {
         head.localScale = Vector3.one * headSize;
-        headAcess.localScale = Vector3.one * headAcessSize;
         paw1.localScale = Vector3.one * pawSize;
         paw2.localScale = -Vector3.one * pawSize;
         eye1.localScale = Vector3.one * eyeSize;
@@ -558,23 +702,26 @@ public class Creature_General : MonoBehaviour
                 eye2.transform.localScale = eyeSize * new Vector3(1, 1, 1);
 
             eye1.gameObject.SetActive(false);
-            eye2.transform.localPosition = new Vector3(eye2Pos.x - 0.02f, eye2Pos.y, eye2Pos.z);
-
             pupilPart.transform.localPosition = pulPos;
 
             if (lastMoveZ != 1)
-                headAcess.localPosition = new Vector3(headAcessOrigin.x + 0.02f, headAcessOrigin.y + 0.02f, headAcess.localPosition.z);
+            {
+                eye2.gameObject.SetActive(true);
+            }
             else
-                headAcess.localPosition = new Vector3(headAcessOrigin.x + 0.04f, headAcessOrigin.y + 0.02f, headAcess.localPosition.z);
+            {
+                eye2.gameObject.SetActive(false);
+                eye2.transform.localPosition = new Vector3(eye2Pos.x - 0.02f, eye2Pos.y, eye2Pos.z);
+            }
         }
         else
         {
             if (transform.localScale.y > 0)
                 eye2.transform.localScale = eyeSize * new Vector3(1, -1, 1);
 
-            headAcess.localPosition = new Vector3(headAcessOrigin.x, headAcessOrigin.y, headAcess.localPosition.z);
 
             eye1.gameObject.SetActive(true);
+            eye2.gameObject.SetActive(true);
             eye2.transform.localPosition = eye2Pos;
             eyePart.transform.localPosition = eyePos;
             pupilPart.transform.localPosition = pulPos;
@@ -589,37 +736,6 @@ public class Creature_General : MonoBehaviour
             transform.GetChild(0).transform.localScale = new Vector3(-1, transform.GetChild(0).transform.localScale.y, transform.GetChild(0).transform.localScale.z);
     }
 
-    private void ApplyRaceSpecifics()
-    {
-        // *** Lógica Revertida: Cada criatura terá um material único e cor aleatória. ***
-
-        // 1. Gera uma cor aleatória
-        Color instanceColor = new Color(Random.value, Random.value, Random.value, 1f);
-
-        // 2. Cria uma instância única do material base para esta criatura
-        Material instanceMat = new Material(baseRaceMaterial);
-        instanceMat.SetColor("_BaseColor", instanceColor); // Define a cor gerada aleatoriamente
-
-        // 3. Aplica o material na criatura
-        SpriteRenderer rend = GetComponentInChildren<SpriteRenderer>();
-        if (rend != null)
-        {
-            rend.sharedMaterial = instanceMat;
-
-            // Informa o script de Flash sobre qual é o material da instância
-            Damage_Flash flash = rend.GetComponent<Damage_Flash>();
-            if (flash != null)
-            {
-                flash.SetupRenderer(instanceMat);
-            }
-        }
-
-        // 4. Remove a chamada de Random.InitState, pois a customização não usa mais Seed.
-        // A customização aleatória de índices é feita no ApplyRandomCustomization(),
-        // que já está livre de seeder, pois removemos o cache estático.
-    }
-
-
     public struct PartReference
     {
         public PlayerSetPart.PlayerPartType type;
@@ -630,31 +746,6 @@ public class Creature_General : MonoBehaviour
             this.type = type;
             this.id = id;
         }
-    }
-
-    public PartReference GetUnlockablePart(Player_Unlocks unlocks)
-    {
-        List<PartReference> parts = new List<PartReference>()
-    {
-        new PartReference(PlayerSetPart.PlayerPartType.BodyAccessory, bodyAcessoriesIndex),
-        new PartReference(PlayerSetPart.PlayerPartType.Head, headIndex),
-        new PartReference(PlayerSetPart.PlayerPartType.HeadAccessory, headAcessoriesIndex),
-        new PartReference(PlayerSetPart.PlayerPartType.FaceAccessory, FaceIndex),
-        new PartReference(PlayerSetPart.PlayerPartType.Eye, eyeIndex),
-        new PartReference(PlayerSetPart.PlayerPartType.Pupil, pupilIndex)
-    };
-
-        // remove inválidos
-        parts.RemoveAll(p => p.id < 0);
-
-        // remove partes já desbloqueadas
-        List<PartReference> available = parts.FindAll(p => !unlocks.HasPart(p.type, p.id));
-
-        if (available.Count == 0)
-            return new PartReference(0, -1); // nada pra desbloquear
-
-        // retorna aleatória
-        return available[Random.Range(0, available.Count)];
     }
 
 }

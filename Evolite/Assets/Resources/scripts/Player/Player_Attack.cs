@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 
 public class Player_Attack : MonoBehaviour
@@ -24,6 +26,7 @@ public class Player_Attack : MonoBehaviour
     [Header("Componentes")]
     public CapsuleCollider attackCollider;
     public Player_General plr;
+    public SkillCoolDown biteCooldownUI;
 
     private List<Creature_Stats> enemiesInRange = new List<Creature_Stats>();
 
@@ -67,36 +70,51 @@ public class Player_Attack : MonoBehaviour
     // --- Lógica de Ataque Básico ---
     private void AttackInput()
     {
-        if (Input.GetKey(baseAttackKey) && ReadyToAttack && !isAttacking) // Adicionamos !isAttacking para evitar conflito com mordida
+        if (Input.GetKey(baseAttackKey) && ReadyToAttack && !isBiting)
         {
             isAttacking = true;
             ReadyToAttack = false;
 
-            // O dano BÁSICO é causado após o delay
+            StartCoroutine(LockMovementDuringAttack(baseAttackSpeed));
+
             Invoke(nameof(DealBaseDamage), attackDelay);
-            Invoke(nameof(EndAttackState), attackDelay + 0.1f); 
+
+            Invoke(nameof(EndAttackState), attackDelay + 0.1f);
+
             Invoke(nameof(ResetAttack), baseAttackSpeed);
         }
     }
 
+    private IEnumerator LockMovementDuringAttack(float duration)
+    {
+        // 1. Bloqueia o movimento imediatamente
+        plr.stats.isAbleToMove = false;
+        plr.stats.rb.linearVelocity = Vector3.zero;
+
+        // 2. Espera pelo tempo de duração total do ciclo (cooldown do ataque)
+        yield return new WaitForSeconds(duration);
+
+        // 3. Libera o movimento.
+        if(!Input.GetKey(baseAttackKey))
+            ResetMovement();
+    }
+
+    public void ResetMovement()
+    {
+        plr.stats.ResetMovement();
+    }
+
     private void DealBaseDamage()
     {
-        // 1. Define a duração do veneno (ajuste este valor conforme necessário)
-        bool poisonActive = plr.skills.Veneno; // Assumindo que 'Venenosas' é a variável placeholder
-        float poisonDuration = 5f; // Exemplo: 5 segundos de envenenamento
-
         foreach (var enemy in enemiesInRange)
         {
             if (enemy != null)
             {
-                // 2. Aplica Dano Básico
                 enemy.TakeDamage(baseAttackDmg);
 
-                // 3. Verifica e Aplica Envenenamento
-                if (poisonActive)
+                if (plr.skills.Veneno)
                 {
-                    // **CHAMADA NECESSÁRIA:** Você precisará implementar 'ApplyPoison' em Creature_Stats
-                    enemy.ApplyPoison(poisonDuration);
+                    enemy.ApplyPoison(3f);
                 }
             }
         }
@@ -121,6 +139,11 @@ public class Player_Attack : MonoBehaviour
     {
         isBiting = true;
         ReadyToBite = false;
+
+        if (biteCooldownUI != null)
+        {
+            biteCooldownUI.StartCooldown(biteCooldown);
+        }
 
         // O dano de MORDA é causado após o delay
         Invoke(nameof(DealBiteDamage), biteDelay);

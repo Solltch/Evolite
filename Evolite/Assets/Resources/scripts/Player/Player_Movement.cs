@@ -78,10 +78,11 @@ public class Player_Movement : MonoBehaviour
 
     [Header("Componentes")]
     public Transform cameraTransform;
-    private Rigidbody rb;
+    public Rigidbody rb;
     public Transform scale;
     public Player_Stats stats;
     public Player_General stats2;
+    public SkillCoolDown dashCooldownUI;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -301,37 +302,33 @@ public class Player_Movement : MonoBehaviour
         isDashing = true;
         isInvulnerable = true;
 
-        // direção do dash
+        if (dashCooldownUI != null)
+        {
+            dashCooldownUI.StartCooldown(dashCooldown);
+        }
+
         Vector3 dashDir;
         if (moveInput.sqrMagnitude > 0.01f)
             dashDir = moveInput.normalized;
         else
             dashDir = transform.forward;
 
-        // remove velocidade vertical para dash limpo
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-
-        // aplica força instantânea
         rb.AddForce(dashDir * dashForce, ForceMode.VelocityChange);
-
-        // impede o Movement Handler de sobrescrever o dash
         isAbleToMove = false;
 
-        // duração do dash + iFrames
         yield return new WaitForSeconds(dashDuration);
 
-        // termina o dash
         isDashing = false;
         isAbleToMove = true;
 
-        // termina iFrames
         yield return new WaitForSeconds(iFrameDuration - dashDuration);
         isInvulnerable = false;
 
-        // cooldown
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
     }
+
 
     private void MovementHandler()
     {

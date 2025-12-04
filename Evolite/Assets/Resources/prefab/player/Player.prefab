@@ -145,6 +145,7 @@ MonoBehaviour:
   plr: {fileID: 0}
   habilidadeApi: {fileID: 0}
   criatHabilApi: {fileID: 0}
+  healthBar: {fileID: 0}
 --- !u!114 &7943958087839204146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -554,6 +555,7 @@ GameObject:
   - component: {fileID: 2722810857883650721}
   - component: {fileID: 4848499505247281174}
   - component: {fileID: 6378215890008693209}
+  - component: {fileID: 8418751748137321276}
   m_Layer: 6
   m_Name: Player Collider
   m_TagString: Player
@@ -597,6 +599,8 @@ MonoBehaviour:
   deathScreen: {fileID: 0}
   deathImage: {fileID: 0}
   redVignette: {fileID: 0}
+  hit: {fileID: 8300000, guid: 52a641301afedd443b80ada789108f04, type: 3}
+  source: {fileID: 0}
   isRunning: 0
   isGrounded: 0
   isDead: 0
@@ -673,9 +677,11 @@ MonoBehaviour:
   DashKey: 113
   state: 0
   cameraTransform: {fileID: 0}
+  rb: {fileID: 0}
   scale: {fileID: 3949827892076935125}
   stats: {fileID: 2669793868046206351}
   stats2: {fileID: 0}
+  dashCooldownUI: {fileID: 0}
 --- !u!114 &3408531466516568651
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -798,6 +804,103 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 944e4d397e638c947a9ceb920502a09d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!82 &8418751748137321276
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6607400466190690645}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &8237515391742473774
 GameObject:
   m_ObjectHideFlags: 0
@@ -879,8 +982,8 @@ MonoBehaviour:
   isBiting: 0
   isAttacking: 0
   attackCollider: {fileID: 4650217995394208921}
-  meshRenderer: {fileID: 0}
   plr: {fileID: 0}
+  biteCooldownUI: {fileID: 0}
 --- !u!1 &8488222735162845878
 GameObject:
   m_ObjectHideFlags: 0
@@ -1053,12 +1156,36 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5491480932541595677}
     - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: skills
+      value: 
+      objectReference: {fileID: 2603701248704042264}
+    - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: stats2
       value: 
       objectReference: {fileID: 1640283823593488630}
     - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: stats3
+      value: 
+      objectReference: {fileID: 2669793868046206351}
+    - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: cabeSize
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: FaceIndex
       value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: cabeAcessX
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: cabeAcessY
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: cabeAcessZ
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: playerSkin
@@ -1072,6 +1199,10 @@ PrefabInstance:
       propertyPath: plr_collider
       value: 
       objectReference: {fileID: 3949827892076935125}
+    - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: cabeAcessSize
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 4860325175751978235, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: parts.Array.size
       value: 6
@@ -1102,6 +1233,10 @@ PrefabInstance:
       objectReference: {fileID: 8475922482014064149}
     - target: {fileID: 5267475688333871077, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: stats
+      value: 
+      objectReference: {fileID: 5491480932541595677}
+    - target: {fileID: 5267475688333871077, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: statsP
       value: 
       objectReference: {fileID: 5491480932541595677}
     - target: {fileID: 5267475688333871077, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
@@ -1148,6 +1283,14 @@ PrefabInstance:
       propertyPath: 'front.Array.data[5]'
       value: 
       objectReference: {fileID: -1820612634, guid: cf9b40aa66e7ac84bae64da9b68b86e3, type: 3}
+    - target: {fileID: 8207830074596124581, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: statsPlayer
+      value: 
+      objectReference: {fileID: 2669793868046206351}
+    - target: {fileID: 8207830074596124581, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
+      propertyPath: flashMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: 62ab9e2919f9ccb43870120b502268d5, type: 2}
     - target: {fileID: 8207830074596124581, guid: 9f03f0117b4fd2e4986fe48be3f86c08, type: 3}
       propertyPath: renderers.Array.size
       value: 22

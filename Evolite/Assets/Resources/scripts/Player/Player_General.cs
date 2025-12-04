@@ -89,7 +89,12 @@ public class Player_General : MonoBehaviour
     public TMP_InputField nomeInput;
 
     public CriaturaAPI criaturaApi;
-    public int idCriatura;         
+    public int idCriatura;
+
+    public AudioSource source;
+    public AudioClip footSteps;
+    public AudioSource musicSource;
+    public AudioClip musicClip;
 
     Transform FindDeepChild(Transform parent, string name)
     {
@@ -111,6 +116,13 @@ public class Player_General : MonoBehaviour
         skills = GetComponent<SkillsDealer>();
         nomeInput = GameObject.Find("CreatureName").GetComponent<TMP_InputField>();
 
+        source = GetComponent<AudioSource>();
+
+        musicSource = transform.parent.GetComponent<AudioSource>();
+        musicSource.clip = musicClip;
+        musicSource.loop = true;
+        musicSource.Play();
+    
         head = FindDeepChild(transform, "Cabeça");
         headAcess = FindDeepChild(transform, "Head Acessory");
         paw1 = FindDeepChild(transform, "Mão Direita");
@@ -176,6 +188,26 @@ public class Player_General : MonoBehaviour
 
         ChangePart();
 
+        if (isMoving && !skills.PatasA)
+        {
+            if (!source.isPlaying)
+            {
+                source.clip = footSteps;
+
+                if (isRunning)
+                    source.pitch = 1f;   
+                else
+                    source.pitch = 0.7f;   
+
+                source.Play();
+            }
+        }
+        else
+        {
+            source.Stop();
+        }
+
+
         if (isCustomizing)
         {
             headSize = cabeSize.value;
@@ -234,12 +266,6 @@ public class Player_General : MonoBehaviour
             }
 
             Resize();
-
-            if (isAttacking)
-            {
-                stats.isAbleToMove = false;
-                Invoke(nameof (stats.ResetMovement), stats2.baseAttackSpeed);
-            }
 
             if (headAcessoriesIndex == 2)
                 playerSkin4.SetColor("_Color", playerSkin.color);

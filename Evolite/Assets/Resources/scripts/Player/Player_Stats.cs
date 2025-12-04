@@ -14,6 +14,8 @@ public class Player_Stats : MonoBehaviour
     public GameObject deathScreen;
     public Image deathImage;
     public Image redVignette;
+    public AudioClip hit;
+    public AudioSource source;
     public bool isRunning;
     public bool isGrounded;
     public bool isDead;
@@ -46,6 +48,8 @@ public class Player_Stats : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        source = GetComponent<AudioSource>();
+
         if (healthControl == null)
             healthControl = GameObject.Find("FillBarH").GetComponent<Sliders_Control>();
         if (staminaControl == null)
@@ -150,7 +154,12 @@ public class Player_Stats : MonoBehaviour
     public void TakeDamage(float damage)
     {
         if (isDead) return;
+
+        source.clip = hit;
+        source.Play();
+
         curHealth -= damage;
+        StartCoroutine(flash.FlashCoroutine());
         redVignette.gameObject.SetActive(true);
         if (curHealth <= maxHealth / 30)
         {

@@ -139,8 +139,12 @@ public class Interact : MonoBehaviour
         }
 
         targetItem.GetComponent<InteractFunctions>().Interact();
-        plr.Eating();
-        StartCoroutine(DelayedResetEating());
+
+        if (targetItem.GetComponent<InteractFunctions>().isFood)
+        {
+            plr.Eating();
+            StartCoroutine(DelayedResetEating());
+        }
 
         // Volta o botão visualmente
         yield return StartCoroutine(ReturnButton(buttonChild));
